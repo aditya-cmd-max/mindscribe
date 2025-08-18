@@ -14,9 +14,20 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Style for scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #4f46e5;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #2d3748;
+        }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
+<body class="bg-gray-900 text-gray-100 transition-colors duration-300">
 
     <!-- Main Container for the entire application -->
     <!-- Initial content is a simple loading message to prevent a blank screen -->
@@ -30,9 +41,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
         // --- Firebase Configuration ---
+        // Using the user-provided configuration and merging in the required Canvas variables
         const firebaseConfig = {
             apiKey: "AIzaSyB7F1uRRiGdw489c_18aJeodbxrzsdFb5c",
             authDomain: "exonova-cd89c.firebaseapp.com",
@@ -43,31 +55,28 @@
             appId: "1:465326262278:web:1b7f8f62e1f46c5ca7db87",
             measurementId: "G-GGG45V0PEF"
         };
-        
-        // Use the global variables provided by the Canvas environment if available
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         // --- Application State and Initialization ---
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
+        
         // Global state object
         const state = {
             user: null,
             userId: null,
-            isAuthReady: false,
             notebooks: [],
             notes: [],
             selectedNotebookId: null,
             selectedNoteId: null,
-            isDarkMode: false,
             message: ''
         };
 
         // DOM elements
         const appContainer = document.getElementById('app');
+        let noteUnsubscribe = null;
 
         // Helper function to update the message display
         const showMessage = (message, isError = false) => {
@@ -75,7 +84,7 @@
             const messageEl = document.getElementById('message-box');
             if (messageEl) {
                 messageEl.textContent = message;
-                messageEl.className = `p-3 rounded-xl shadow-lg mt-4 ${isError ? 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100' : 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100'}`;
+                messageEl.className = `p-3 rounded-xl shadow-lg mt-4 ${isError ? 'bg-red-500 text-white' : 'bg-indigo-600 text-white'}`;
                 messageEl.classList.remove('hidden');
                 setTimeout(() => {
                     messageEl.classList.add('hidden');
@@ -88,17 +97,17 @@
         /** Renders the authentication form (login/signup). */
         const renderAuthForm = () => {
             appContainer.innerHTML = `
-                <div class="flex items-center justify-center min-h-screen w-full">
-                    <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-sm">
-                        <h2 class="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">Mindscribe</h2>
+                <div class="flex items-center justify-center min-h-screen w-full p-4">
+                    <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700">
+                        <h2 class="text-4xl font-extrabold text-center mb-6 text-indigo-400">Mindscribe</h2>
                         <div id="auth-form" class="space-y-4">
-                            <input id="email-input" type="email" placeholder="Email" class="w-full p-3 rounded-md border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <input id="password-input" type="password" placeholder="Password" class="w-full p-3 rounded-md border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <button id="auth-button" class="w-full p-3 rounded-md font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">Login</button>
-                            <button id="google-auth-button" class="w-full p-3 rounded-md font-semibold text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-600 transition-colors">Sign In with Google</button>
+                            <input id="email-input" type="email" placeholder="Email" class="w-full p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input id="password-input" type="password" placeholder="Password" class="w-full p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button id="auth-button" class="w-full p-3 rounded-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200 shadow-md">Login</button>
+                            <button id="google-auth-button" class="w-full p-3 rounded-lg font-bold text-gray-300 border border-gray-600 hover:bg-gray-700 transition-colors duration-200">Sign In with Google</button>
                         </div>
-                        <p id="auth-toggle" class="text-center mt-4 text-gray-800 dark:text-gray-100">
-                            Don't have an account? <span class="text-indigo-600 cursor-pointer font-medium">Sign Up</span>
+                        <p id="auth-toggle" class="text-center mt-4 text-gray-400">
+                            Don't have an account? <span class="text-indigo-400 cursor-pointer font-semibold hover:underline">Sign Up</span>
                         </p>
                         <div id="message-box" class="hidden"></div>
                     </div>
@@ -112,66 +121,58 @@
             appContainer.innerHTML = `
                 <div class="flex flex-grow min-h-screen">
                     <!-- Sidebar -->
-                    <aside id="sidebar" class="w-80 min-h-screen p-4 bg-white dark:bg-gray-800 shadow-lg flex flex-col">
-                        <h1 class="text-2xl font-bold mb-4">Mindscribe</h1>
+                    <aside id="sidebar" class="w-80 min-h-screen p-6 bg-gray-800 shadow-xl flex flex-col border-r border-gray-700">
+                        <h1 class="text-3xl font-extrabold mb-6 text-indigo-400">Mindscribe</h1>
                         
                         <!-- User Info -->
-                        <div class="p-3 mb-4 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-between">
-                            <div class="flex flex-col">
-                                <span class="text-sm text-gray-500">User ID:</span>
-                                <span id="user-id-display" class="text-xs truncate text-gray-800 dark:text-gray-100">${state.userId}</span>
-                            </div>
-                            <button id="logout-button" class="px-3 py-1 rounded-md text-sm font-medium bg-indigo-600 hover:bg-indigo-700 transition-colors text-white">Logout</button>
+                        <div class="p-4 mb-6 rounded-xl bg-gray-700 flex flex-col items-center">
+                            <span class="text-sm text-gray-400 font-medium">User ID:</span>
+                            <span id="user-id-display" class="text-xs truncate text-white font-mono mt-1">${state.userId}</span>
+                            <button id="logout-button" class="px-4 py-2 mt-3 rounded-lg text-sm font-semibold bg-red-600 hover:bg-red-700 transition-colors duration-200 text-white shadow-md w-full">Logout</button>
                         </div>
                         
                         <!-- Notebook Creation -->
-                        <div class="mb-4">
-                            <button id="new-notebook-button" class="w-full p-2 rounded-md font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">New Notebook</button>
-                            <form id="new-notebook-form" class="mt-2 flex hidden">
-                                <input id="new-notebook-input" type="text" placeholder="Notebook name" class="flex-grow p-2 rounded-l-md border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:outline-none">
-                                <button type="submit" class="p-2 rounded-r-md bg-indigo-600 hover:bg-indigo-700 text-white">+</button>
+                        <div class="mb-6">
+                            <button id="new-notebook-button" class="w-full p-3 rounded-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200 shadow-md">New Notebook</button>
+                            <form id="new-notebook-form" class="mt-3 flex hidden">
+                                <input id="new-notebook-input" type="text" placeholder="Notebook name" class="flex-grow p-3 rounded-l-lg bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:outline-none">
+                                <button type="submit" class="p-3 rounded-r-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors">+</button>
                             </form>
                         </div>
 
                         <!-- Notebook List -->
-                        <nav class="flex-grow overflow-y-auto pr-2 mb-4">
-                            <h2 class="text-lg font-semibold mb-2">Notebooks</h2>
+                        <nav class="flex-grow overflow-y-auto pr-2 mb-6 space-y-2">
+                            <h2 class="text-xl font-bold mb-3 text-white">Notebooks</h2>
                             <ul id="notebooks-list">
                                 <!-- Notebook items will be rendered here -->
                             </ul>
                         </nav>
                         
                         <!-- Notes Actions -->
-                        <div class="mb-4">
-                            <button id="new-note-button" class="w-full p-2 rounded-md font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">New Note</button>
-                        </div>
-                        
-                        <!-- Dark Mode Toggle -->
-                        <div class="mt-auto flex justify-between items-center">
-                            <span>Dark Mode</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input id="dark-mode-toggle" type="checkbox" class="sr-only peer" ${state.isDarkMode ? 'checked' : ''}>
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                            </label>
+                        <div class="mt-auto">
+                            <button id="new-note-button" class="w-full p-3 rounded-lg font-bold text-white bg-green-600 hover:bg-green-700 transition-colors duration-200 shadow-md">New Note</button>
                         </div>
                     </aside>
 
                     <!-- Main Content Panel -->
-                    <main class="flex-grow p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <main class="flex-grow p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Notes List -->
-                        <div class="lg:col-span-1 p-4 rounded-xl bg-white dark:bg-gray-800 overflow-y-auto">
-                            <h2 class="text-2xl font-bold mb-4">Notes</h2>
-                            <ul id="notes-list">
+                        <div class="lg:col-span-1 p-6 rounded-2xl bg-gray-800 shadow-lg border border-gray-700 flex flex-col">
+                            <h2 class="text-2xl font-bold mb-4 text-white">Notes</h2>
+                            <ul id="notes-list" class="flex-grow overflow-y-auto pr-2 space-y-2">
                                 <!-- Note items will be rendered here -->
                             </ul>
+                            <div id="no-notes-message" class="text-center text-gray-500 mt-4 hidden">
+                                <p>No notes in this notebook. Create one!</p>
+                            </div>
                         </div>
 
                         <!-- Note Editor and AI Assistant -->
                         <div class="lg:col-span-2 flex flex-col">
-                            <div id="note-editor-panel" class="p-4 rounded-xl bg-white dark:bg-gray-800 flex-grow mb-4">
+                            <div id="note-editor-panel" class="p-6 rounded-2xl bg-gray-800 shadow-lg border border-gray-700 flex-grow mb-6">
                                 <!-- Editor content will be rendered here -->
                             </div>
-                            <div id="ai-chat-panel" class="p-4 rounded-xl bg-white dark:bg-gray-800 flex-grow">
+                            <div id="ai-chat-panel" class="p-6 rounded-2xl bg-gray-800 shadow-lg border border-gray-700 flex-grow">
                                 <!-- AI chat content will be rendered here -->
                             </div>
                         </div>
@@ -179,6 +180,7 @@
                 </div>
             `;
             setupDashboardEventListeners();
+            setupFirestoreListeners();
             renderNotebooks();
             renderNotes();
             renderNoteEditor();
@@ -191,11 +193,11 @@
             if (!notebooksList) return;
             
             notebooksList.innerHTML = state.notebooks.map(notebook => `
-                <li data-id="${notebook.id}" class="flex items-center justify-between p-2 rounded-md cursor-pointer mb-1 ${
-                    state.selectedNotebookId === notebook.id ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+                <li data-id="${notebook.id}" class="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors duration-200 ${
+                    state.selectedNotebookId === notebook.id ? 'bg-indigo-600 text-white shadow-lg' : 'hover:bg-gray-700'
                 }">
-                    <span>${notebook.name}</span>
-                    <button data-id="${notebook.id}" class="delete-notebook-btn ${state.selectedNotebookId === notebook.id ? 'text-white' : 'text-gray-500 hover:text-red-500'}">
+                    <span class="font-medium">${notebook.name}</span>
+                    <button data-id="${notebook.id}" class="delete-notebook-btn text-gray-400 hover:text-red-500 transition-colors duration-200 text-xl font-bold leading-none">
                         &times;
                     </button>
                 </li>
@@ -205,21 +207,31 @@
         /** Renders the list of notes in the notes panel. */
         const renderNotes = () => {
             const notesList = document.getElementById('notes-list');
+            const noNotesMessage = document.getElementById('no-notes-message');
             if (!notesList) return;
 
             const formatDate = (date) => {
-                const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
-                return date.toLocaleDateString('en-US', options);
+                if (date && date.toDate) {
+                    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+                    return date.toDate().toLocaleDateString('en-US', options);
+                }
+                return 'N/A';
             };
 
-            notesList.innerHTML = state.notes.map(note => `
-                <li data-id="${note.id}" class="p-3 rounded-md cursor-pointer mb-2 transition-colors ${
-                    state.selectedNoteId === note.id ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-700'
-                }">
-                    <h3 class="font-semibold ${state.selectedNoteId === note.id ? '' : 'text-gray-800 dark:text-gray-100'}">${note.title || 'Untitled Note'}</h3>
-                    <p class="text-sm ${state.selectedNoteId === note.id ? 'text-gray-200' : 'text-gray-500'}">${note.updatedAt ? formatDate(note.updatedAt.toDate()) : 'N/A'}</p>
-                </li>
-            `).join('');
+            if (state.notes.length === 0) {
+                noNotesMessage.classList.remove('hidden');
+                notesList.innerHTML = '';
+            } else {
+                noNotesMessage.classList.add('hidden');
+                notesList.innerHTML = state.notes.map(note => `
+                    <li data-id="${note.id}" class="p-4 rounded-lg cursor-pointer shadow-md transition-all duration-200 ${
+                        state.selectedNoteId === note.id ? 'bg-indigo-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+                    }">
+                        <h3 class="font-semibold text-lg ${state.selectedNoteId === note.id ? '' : 'text-white'}">${note.title || 'Untitled Note'}</h3>
+                        <p class="text-sm ${state.selectedNoteId === note.id ? 'text-gray-200' : 'text-gray-400'}">${note.updatedAt ? formatDate(note.updatedAt) : 'N/A'}</p>
+                    </li>
+                `).join('');
+            }
         };
 
         /** Renders the note editor panel. */
@@ -230,31 +242,36 @@
 
             if (selectedNote) {
                 const formatDate = (date) => {
-                    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
-                    return date.toLocaleDateString('en-US', options);
+                    if (date && date.toDate) {
+                        const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+                        return date.toDate().toLocaleDateString('en-US', options);
+                    }
+                    return 'Never';
                 };
-                const lastUpdated = selectedNote.updatedAt ? formatDate(selectedNote.updatedAt.toDate()) : 'Never';
+                const lastUpdated = selectedNote.updatedAt ? formatDate(selectedNote.updatedAt) : 'Never';
 
                 editorPanel.innerHTML = `
-                    <div class="flex items-center justify-between mb-2">
-                        <input id="note-title-input" type="text" value="${selectedNote.title}" placeholder="Note Title" class="text-2xl font-bold w-full bg-transparent outline-none text-gray-800 dark:text-gray-100">
-                    </div>
-                    <p class="text-sm text-gray-500 mb-4">Last Updated: ${lastUpdated}</p>
-                    <textarea id="note-content-textarea" placeholder="Start writing..." class="flex-grow p-2 rounded-lg bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 resize-none outline-none focus:ring-2 focus:ring-indigo-500 w-full h-96">${selectedNote.content}</textarea>
-                    <div class="flex gap-2 mt-4">
-                        <button id="delete-note-button" class="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors font-semibold">
-                            Delete Note
-                        </button>
-                        <button id="export-note-button" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors">
-                            Export Markdown
-                        </button>
+                    <div class="flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-4">
+                            <input id="note-title-input" type="text" value="${selectedNote.title}" placeholder="Note Title" class="text-3xl font-bold w-full bg-transparent outline-none text-white placeholder-gray-500">
+                        </div>
+                        <p class="text-sm text-gray-500 mb-4">Last Updated: ${lastUpdated}</p>
+                        <textarea id="note-content-textarea" placeholder="Start writing..." class="flex-grow p-4 rounded-xl bg-gray-700 text-white resize-none outline-none focus:ring-2 focus:ring-indigo-500 w-full h-full">${selectedNote.content}</textarea>
+                        <div class="flex gap-4 mt-4">
+                            <button id="delete-note-button" class="flex-1 px-6 py-3 rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors duration-200 font-bold shadow-md">
+                                Delete Note
+                            </button>
+                            <button id="export-note-button" class="flex-1 px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors duration-200 shadow-md">
+                                Export Markdown
+                            </button>
+                        </div>
                     </div>
                 `;
                 setupEditorEventListeners();
             } else {
                 editorPanel.innerHTML = `
-                    <div class="flex items-center justify-center h-full text-center text-gray-800 dark:text-gray-100">
-                        <p class="text-xl font-medium">Select a note from the sidebar or create a new one.</p>
+                    <div class="flex items-center justify-center h-full text-center text-gray-500">
+                        <p class="text-xl font-medium">Select a note or create a new one.</p>
                     </div>
                 `;
             }
@@ -267,13 +284,13 @@
 
             chatPanel.innerHTML = `
                 <div class="flex flex-col h-full">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">AI Assistant</h3>
-                    <div id="ai-response" class="flex-grow overflow-y-auto mb-4 p-2 rounded-lg bg-gray-100 dark:bg-gray-900">
-                        <p class="whitespace-pre-wrap text-gray-800 dark:text-gray-100">Ask a question or request a summary here...</p>
+                    <h3 class="text-xl font-bold mb-4 text-white">AI Assistant</h3>
+                    <div id="ai-response" class="flex-grow overflow-y-auto mb-4 p-4 rounded-xl bg-gray-700">
+                        <p class="whitespace-pre-wrap text-gray-400">Ask a question or request a summary here...</p>
                     </div>
-                    <div class="flex gap-2 mt-auto">
-                        <input id="ai-prompt-input" type="text" placeholder="Ask AI a question..." class="flex-grow p-2 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <button id="ai-send-button" class="px-4 py-2 rounded-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">Send</button>
+                    <div class="flex gap-4 mt-auto">
+                        <input id="ai-prompt-input" type="text" placeholder="Ask AI a question..." class="flex-grow p-3 rounded-lg border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button id="ai-send-button" class="px-6 py-3 rounded-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200 shadow-md">Send</button>
                     </div>
                 </div>
             `;
@@ -291,74 +308,75 @@
             const passwordInput = document.getElementById('password-input');
             let isLogin = true;
 
-            authToggle.addEventListener('click', () => {
-                isLogin = !isLogin;
-                authButton.textContent = isLogin ? 'Login' : 'Sign Up';
-                authToggle.innerHTML = isLogin ? "Don't have an account? <span class='text-indigo-600 cursor-pointer font-medium'>Sign Up</span>" : "Already have an account? <span class='text-indigo-600 cursor-pointer font-medium'>Login</span>";
-            });
+            if (authToggle) {
+                authToggle.addEventListener('click', () => {
+                    isLogin = !isLogin;
+                    authButton.textContent = isLogin ? 'Login' : 'Sign Up';
+                    authToggle.innerHTML = isLogin ? "Don't have an account? <span class='text-indigo-400 cursor-pointer font-semibold hover:underline'>Sign Up</span>" : "Already have an account? <span class='text-indigo-400 cursor-pointer font-semibold hover:underline'>Login</span>";
+                });
+            }
 
-            authButton.addEventListener('click', async () => {
-                try {
-                    if (isLogin) {
-                        await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-                    } else {
-                        await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+            if (authButton) {
+                authButton.addEventListener('click', async () => {
+                    try {
+                        if (isLogin) {
+                            await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+                        } else {
+                            await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+                        }
+                    } catch (error) {
+                        showMessage(error.message, true);
                     }
-                } catch (error) {
-                    showMessage(error.message, true);
-                }
-            });
+                });
+            }
 
-            googleAuthButton.addEventListener('click', async () => {
-                const provider = new GoogleAuthProvider();
-                try {
-                    await signInWithPopup(auth, provider);
-                } catch (error) {
-                    showMessage(error.message, true);
-                }
-            });
+            if (googleAuthButton) {
+                googleAuthButton.addEventListener('click', async () => {
+                    const provider = new GoogleAuthProvider();
+                    try {
+                        await signInWithPopup(auth, provider);
+                    } catch (error) {
+                        showMessage(error.message, true);
+                    }
+                });
+            }
         };
 
         /** Sets up event listeners for the dashboard UI. */
         const setupDashboardEventListeners = () => {
             // Logout
-            document.getElementById('logout-button').addEventListener('click', () => {
+            document.getElementById('logout-button')?.addEventListener('click', () => {
                 signOut(auth);
-            });
-
-            // Dark Mode
-            document.getElementById('dark-mode-toggle').addEventListener('change', (e) => {
-                state.isDarkMode = e.target.checked;
-                document.documentElement.classList.toggle('dark', state.isDarkMode);
             });
 
             // New Notebook
             const newNotebookBtn = document.getElementById('new-notebook-button');
             const newNotebookForm = document.getElementById('new-notebook-form');
-            newNotebookBtn.addEventListener('click', () => {
-                newNotebookForm.classList.toggle('hidden');
-            });
-
-            newNotebookForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const input = document.getElementById('new-notebook-input');
-                if (input.value.trim()) {
-                    await createNotebook(input.value.trim());
-                    input.value = '';
-                    newNotebookForm.classList.add('hidden');
-                }
-            });
+            if (newNotebookBtn && newNotebookForm) {
+                newNotebookBtn.addEventListener('click', () => {
+                    newNotebookForm.classList.toggle('hidden');
+                });
+                newNotebookForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const input = document.getElementById('new-notebook-input');
+                    if (input.value.trim()) {
+                        await createNotebook(input.value.trim());
+                        input.value = '';
+                        newNotebookForm.classList.add('hidden');
+                    }
+                });
+            }
 
             // Notebook Selection & Deletion
-            document.getElementById('notebooks-list').addEventListener('click', async (e) => {
-                if (e.target.tagName === 'LI') {
-                    const notebookId = e.target.dataset.id;
+            document.getElementById('notebooks-list')?.addEventListener('click', async (e) => {
+                const targetLi = e.target.closest('li');
+                if (targetLi) {
+                    const notebookId = targetLi.dataset.id;
                     if (notebookId) {
                         state.selectedNotebookId = notebookId;
                         state.selectedNoteId = null; // Reset selected note when notebook changes
-                        renderNotes();
                         renderNotebooks();
-                        renderNoteEditor();
+                        setupNotesListener(notebookId);
                     }
                 } else if (e.target.classList.contains('delete-notebook-btn')) {
                     e.stopPropagation();
@@ -370,7 +388,7 @@
             });
 
             // New Note
-            document.getElementById('new-note-button').addEventListener('click', () => {
+            document.getElementById('new-note-button')?.addEventListener('click', () => {
                 if (state.selectedNotebookId) {
                     createNote(state.selectedNotebookId);
                 } else {
@@ -379,7 +397,7 @@
             });
 
             // Note Selection
-            document.getElementById('notes-list').addEventListener('click', (e) => {
+            document.getElementById('notes-list')?.addEventListener('click', (e) => {
                 const listItem = e.target.closest('li');
                 if (listItem) {
                     const noteId = listItem.dataset.id;
@@ -413,8 +431,10 @@
                 }, 500);
             };
 
-            if (titleInput && contentTextarea) {
+            if (titleInput) {
                 titleInput.addEventListener('input', handleUpdate);
+            }
+            if (contentTextarea) {
                 contentTextarea.addEventListener('input', handleUpdate);
             }
 
@@ -427,7 +447,12 @@
             if (exportBtn) {
                 exportBtn.addEventListener('click', () => {
                     const markdownContent = `# ${titleInput.value}\n\n${contentTextarea.value}`;
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = markdownContent;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
                     document.execCommand('copy');
+                    document.body.removeChild(tempTextArea);
                     showMessage("Note copied to clipboard!");
                 });
             }
@@ -444,7 +469,7 @@
                 if (!prompt) return;
 
                 aiResponsePanel.innerHTML = `<p class="whitespace-pre-wrap text-gray-500">Thinking...</p>`;
-                aiSendButton.disabled = true;
+                if (aiSendButton) aiSendButton.disabled = true;
 
                 const selectedNote = state.notes.find(n => n.id === state.selectedNoteId);
                 const promptWithContext = selectedNote
@@ -488,16 +513,20 @@
                     }
                 }
                 
-                aiResponsePanel.innerHTML = `<p class="whitespace-pre-wrap">${resultText}</p>`;
-                aiSendButton.disabled = false;
+                aiResponsePanel.innerHTML = `<p class="whitespace-pre-wrap text-white">${resultText}</p>`;
+                if (aiSendButton) aiSendButton.disabled = false;
             };
 
-            aiSendButton.addEventListener('click', handleGeminiCall);
-            aiPromptInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    handleGeminiCall();
-                }
-            });
+            if (aiSendButton) {
+                aiSendButton.addEventListener('click', handleGeminiCall);
+            }
+            if (aiPromptInput) {
+                aiPromptInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        handleGeminiCall();
+                    }
+                });
+            }
         };
 
         // --- Firebase Data Operations ---
@@ -525,8 +554,19 @@
                 const deletePromises = querySnapshot.docs.map(noteDoc => deleteDoc(doc(notesRef, noteDoc.id)));
                 await Promise.all(deletePromises);
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userId, 'notebooks', id));
-                state.selectedNotebookId = state.notebooks[0]?.id || null;
+                
+                // Select the first remaining notebook, or null if none exist
+                const remainingNotebooks = state.notebooks.filter(n => n.id !== id);
+                state.selectedNotebookId = remainingNotebooks.length > 0 ? remainingNotebooks[0].id : null;
                 renderNotebooks();
+                if (state.selectedNotebookId) {
+                    setupNotesListener(state.selectedNotebookId);
+                } else {
+                    state.notes = [];
+                    state.selectedNoteId = null;
+                    renderNotes();
+                    renderNoteEditor();
+                }
             } catch (e) {
                 console.error("Error deleting notebook: ", e);
                 showMessage("Failed to delete notebook.", true);
@@ -546,8 +586,6 @@
                     updatedAt: new Date()
                 });
                 state.selectedNoteId = newDoc.id;
-                renderNotes();
-                renderNoteEditor();
             } catch (e) {
                 console.error("Error creating note: ", e);
                 showMessage("Failed to create note.", true);
@@ -571,7 +609,8 @@
             if (!db || !state.userId) return;
             try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userId, 'notes', id));
-                state.selectedNoteId = state.notes.length > 1 ? state.notes.find(n => n.id !== id)?.id : null;
+                const remainingNotes = state.notes.filter(n => n.id !== id);
+                state.selectedNoteId = remainingNotes.length > 0 ? remainingNotes[0].id : null;
                 renderNotes();
                 renderNoteEditor();
             } catch (e) {
@@ -582,30 +621,46 @@
 
         // --- Firebase Listeners ---
 
-        /** Sets up real-time listeners for notebooks and notes. */
-        const setupFirestoreListeners = () => {
+        /** Sets up real-time listener for notebooks. */
+        const setupNotebooksListener = () => {
             if (!state.userId) return;
-
-            // Notebooks listener
             const notebooksCol = collection(db, 'artifacts', appId, 'users', state.userId, 'notebooks');
             onSnapshot(notebooksCol, (snapshot) => {
                 state.notebooks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (state.notebooks.length > 0 && !state.selectedNotebookId) {
                     state.selectedNotebookId = state.notebooks[0].id;
+                    setupNotesListener(state.selectedNotebookId);
+                } else if (state.notebooks.length === 0) {
+                    state.selectedNotebookId = null;
+                    state.notes = [];
+                    state.selectedNoteId = null;
+                    renderNotes();
+                    renderNoteEditor();
                 }
                 renderNotebooks();
             }, (error) => {
                 console.error("Error fetching notebooks:", error);
             });
+        };
 
-            // Notes listener
+        /** Sets up a real-time listener for notes of a specific notebook. */
+        const setupNotesListener = (notebookId) => {
+            if (!state.userId || !notebookId) return;
+
+            // Unsubscribe from the previous listener if it exists
+            if (noteUnsubscribe) {
+                noteUnsubscribe();
+            }
+
             const notesCol = collection(db, 'artifacts', appId, 'users', state.userId, 'notes');
-            onSnapshot(notesCol, (snapshot) => {
-                state.notes = snapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .filter(note => note.notebookId === state.selectedNotebookId);
+            const q = query(notesCol, where('notebookId', '==', notebookId));
+
+            noteUnsubscribe = onSnapshot(q, (snapshot) => {
+                state.notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 state.notes.sort((a, b) => b.updatedAt.toDate().getTime() - a.updatedAt.toDate().getTime());
-                if (state.notes.length > 0 && !state.selectedNoteId) {
+                
+                // If the selected note is not in the new list, select the first one
+                if (state.notes.length > 0 && (!state.selectedNoteId || !state.notes.find(n => n.id === state.selectedNoteId))) {
                     state.selectedNoteId = state.notes[0].id;
                 } else if (state.notes.length === 0) {
                     state.selectedNoteId = null;
@@ -616,48 +671,42 @@
                 console.error("Error fetching notes:", error);
             });
         };
+        
+        /** Sets up real-time listeners for notebooks and notes. */
+        const setupFirestoreListeners = () => {
+            if (!state.userId) return;
+            setupNotebooksListener();
+        };
 
         // --- Main Application Flow ---
 
         /** Initializes the application based on the authentication state. */
-        const initializeAppFlow = () => {
-            // Use a flag to ensure the UI is only rendered once the auth state is known
-            let initialAuthCheck = false;
-
+        const initializeAppFlow = async () => {
             // Listen for changes in the user's authentication state
-            onAuthStateChanged(auth, (user) => {
-                if (!initialAuthCheck) {
-                    initialAuthCheck = true;
-                    if (user) {
-                        state.user = user;
-                        state.userId = user.uid;
-                        renderDashboard();
-                        setupFirestoreListeners();
-                    } else {
-                        state.user = null;
-                        state.userId = null;
-                        renderAuthForm();
-                    }
-                    state.isAuthReady = true;
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    state.user = user;
+                    state.userId = user.uid;
+                    renderDashboard();
+                } else {
+                    state.user = null;
+                    state.userId = null;
+                    renderAuthForm();
                 }
             });
 
-            // Use an async function for the initial token sign-in to fix the SyntaxError
-            const initialSignIn = async () => {
-                if (initialAuthToken) {
-                    try {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } catch (error) {
-                        console.error("Error signing in with custom token:", error);
-                        // If custom token fails, fall back to anonymous sign-in
-                        signInAnonymously(auth);
-                    }
-                } else {
-                     signInAnonymously(auth);
+            // Attempt to sign in with the custom token if available, otherwise sign in anonymously
+            if (initialAuthToken) {
+                try {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } catch (error) {
+                    console.error("Error signing in with custom token:", error);
+                    // Fall back to anonymous sign-in if the custom token fails
+                    signInAnonymously(auth);
                 }
-            };
-
-            initialSignIn();
+            } else {
+                 signInAnonymously(auth);
+            }
         };
 
         window.onload = initializeAppFlow;
