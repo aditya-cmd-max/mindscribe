@@ -14,7 +14,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Style for scrollbar */
+        /* Custom scrollbar for a sleek look */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -23,17 +23,21 @@
             border-radius: 4px;
         }
         ::-webkit-scrollbar-track {
-            background-color: #2d3748;
+            background-color: #1a202c; /* Matches the background of the dark theme */
         }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 transition-colors duration-300">
 
-    <!-- Main Container for the entire application -->
-    <!-- Initial content is a simple loading message to prevent a blank screen -->
+    <!-- The main application container -->
     <div id="app" class="min-h-screen flex items-center justify-center">
+        <!-- A simple, visually pleasing loading state -->
         <div class="text-center">
-            <h2 class="text-2xl font-semibold animate-pulse">Loading Mindscribe...</h2>
+            <svg class="animate-spin h-10 w-10 text-indigo-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <h2 class="text-2xl font-semibold mt-4 text-indigo-400">Loading Mindscribe...</h2>
         </div>
     </div>
 
@@ -41,10 +45,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
-        // --- Firebase Configuration ---
-        // Using the user-provided configuration and merging in the required Canvas variables
+        // --- Firebase Configuration and Global Variables ---
         const firebaseConfig = {
             apiKey: "AIzaSyB7F1uRRiGdw489c_18aJeodbxrzsdFb5c",
             authDomain: "exonova-cd89c.firebaseapp.com",
@@ -55,15 +58,15 @@
             appId: "1:465326262278:web:1b7f8f62e1f46c5ca7db87",
             measurementId: "G-GGG45V0PEF"
         };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // --- Application State and Initialization ---
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // Global state object
+        // Canvas-specific variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Global state object to manage the app's data
         const state = {
             user: null,
             userId: null,
@@ -71,20 +74,20 @@
             notes: [],
             selectedNotebookId: null,
             selectedNoteId: null,
+            isAuthReady: false,
             message: ''
         };
 
-        // DOM elements
-        const appContainer = document.getElementById('app');
-        let noteUnsubscribe = null;
+        let noteUnsubscribe = null; // To manage the real-time notes listener
 
-        // Helper function to update the message display
+        // --- Helper Functions ---
+
+        /** Displays a temporary message to the user. */
         const showMessage = (message, isError = false) => {
-            state.message = message;
             const messageEl = document.getElementById('message-box');
             if (messageEl) {
                 messageEl.textContent = message;
-                messageEl.className = `p-3 rounded-xl shadow-lg mt-4 ${isError ? 'bg-red-500 text-white' : 'bg-indigo-600 text-white'}`;
+                messageEl.className = `p-3 rounded-xl shadow-lg mt-4 text-center ${isError ? 'bg-red-600' : 'bg-indigo-600'} text-white`;
                 messageEl.classList.remove('hidden');
                 setTimeout(() => {
                     messageEl.classList.add('hidden');
@@ -92,11 +95,22 @@
             }
         };
 
-        // --- User Interface Rendering Functions ---
+        // --- Main Rendering Function ---
+
+        /** Renders the entire application UI based on the current state. */
+        const render = () => {
+            if (!state.user) {
+                renderAuthForm();
+            } else {
+                renderDashboard();
+            }
+        };
+
+        // --- Component Rendering Functions ---
 
         /** Renders the authentication form (login/signup). */
         const renderAuthForm = () => {
-            appContainer.innerHTML = `
+            document.getElementById('app').innerHTML = `
                 <div class="flex items-center justify-center min-h-screen w-full p-4">
                     <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700">
                         <h2 class="text-4xl font-extrabold text-center mb-6 text-indigo-400">Mindscribe</h2>
@@ -118,11 +132,11 @@
 
         /** Renders the main dashboard for logged-in users. */
         const renderDashboard = () => {
-            appContainer.innerHTML = `
-                <div class="flex flex-grow min-h-screen">
+            document.getElementById('app').innerHTML = `
+                <div class="flex flex-col lg:flex-row min-h-screen w-full">
                     <!-- Sidebar -->
-                    <aside id="sidebar" class="w-80 min-h-screen p-6 bg-gray-800 shadow-xl flex flex-col border-r border-gray-700">
-                        <h1 class="text-3xl font-extrabold mb-6 text-indigo-400">Mindscribe</h1>
+                    <aside id="sidebar" class="w-full lg:w-80 min-h-screen p-6 bg-gray-800 shadow-xl flex flex-col border-r border-gray-700">
+                        <h1 class="text-3xl font-extrabold mb-6 text-indigo-400 text-center lg:text-left">Mindscribe</h1>
                         
                         <!-- User Info -->
                         <div class="p-4 mb-6 rounded-xl bg-gray-700 flex flex-col items-center">
@@ -548,17 +562,26 @@
         const deleteNotebook = async (id) => {
             if (!db || !state.userId) return;
             try {
+                // Use a batch write for atomic deletion of all notes and the notebook
+                const batch = writeBatch(db);
                 const notesRef = collection(db, 'artifacts', appId, 'users', state.userId, 'notes');
                 const q = query(notesRef, where('notebookId', '==', id));
                 const querySnapshot = await getDocs(q);
-                const deletePromises = querySnapshot.docs.map(noteDoc => deleteDoc(doc(notesRef, noteDoc.id)));
-                await Promise.all(deletePromises);
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', state.userId, 'notebooks', id));
-                
+                querySnapshot.docs.forEach(noteDoc => {
+                    batch.delete(doc(notesRef, noteDoc.id));
+                });
+                batch.delete(doc(db, 'artifacts', appId, 'users', state.userId, 'notebooks', id));
+                await batch.commit();
+
                 // Select the first remaining notebook, or null if none exist
                 const remainingNotebooks = state.notebooks.filter(n => n.id !== id);
                 state.selectedNotebookId = remainingNotebooks.length > 0 ? remainingNotebooks[0].id : null;
-                renderNotebooks();
+                
+                // Unsubscribe from the old notes listener and set up a new one if a notebook is selected
+                if (noteUnsubscribe) {
+                    noteUnsubscribe();
+                    noteUnsubscribe = null;
+                }
                 if (state.selectedNotebookId) {
                     setupNotesListener(state.selectedNotebookId);
                 } else {
@@ -627,17 +650,20 @@
             const notebooksCol = collection(db, 'artifacts', appId, 'users', state.userId, 'notebooks');
             onSnapshot(notebooksCol, (snapshot) => {
                 state.notebooks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (state.notebooks.length > 0 && !state.selectedNotebookId) {
+                
+                // If no notebook is selected, or the selected one was deleted, pick the first one
+                if (state.notebooks.length > 0 && (!state.selectedNotebookId || !state.notebooks.some(n => n.id === state.selectedNotebookId))) {
                     state.selectedNotebookId = state.notebooks[0].id;
                     setupNotesListener(state.selectedNotebookId);
                 } else if (state.notebooks.length === 0) {
                     state.selectedNotebookId = null;
                     state.notes = [];
                     state.selectedNoteId = null;
-                    renderNotes();
-                    renderNoteEditor();
+                    if(noteUnsubscribe) noteUnsubscribe();
                 }
                 renderNotebooks();
+                renderNotes();
+                renderNoteEditor();
             }, (error) => {
                 console.error("Error fetching notebooks:", error);
             });
@@ -657,7 +683,11 @@
 
             noteUnsubscribe = onSnapshot(q, (snapshot) => {
                 state.notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                state.notes.sort((a, b) => b.updatedAt.toDate().getTime() - a.updatedAt.toDate().getTime());
+                state.notes.sort((a, b) => {
+                  const aTime = a.updatedAt?.toDate()?.getTime() ?? 0;
+                  const bTime = b.updatedAt?.toDate()?.getTime() ?? 0;
+                  return bTime - aTime;
+                });
                 
                 // If the selected note is not in the new list, select the first one
                 if (state.notes.length > 0 && (!state.selectedNoteId || !state.notes.find(n => n.id === state.selectedNoteId))) {
@@ -682,16 +712,16 @@
 
         /** Initializes the application based on the authentication state. */
         const initializeAppFlow = async () => {
-            // Listen for changes in the user's authentication state
+            // Wait for authentication state to be ready
             onAuthStateChanged(auth, async (user) => {
+                state.user = user;
+                state.isAuthReady = true;
                 if (user) {
-                    state.user = user;
                     state.userId = user.uid;
-                    renderDashboard();
+                    render(); // Render the main dashboard
                 } else {
-                    state.user = null;
                     state.userId = null;
-                    renderAuthForm();
+                    render(); // Render the auth form
                 }
             });
 
