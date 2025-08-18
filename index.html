@@ -45,6 +45,9 @@
             outline: none;
             box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.5);
         }
+        .ai-assistant-container {
+            height: 100%;
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen">
@@ -96,7 +99,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 mr-2"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146a3 3 0 013-3h15.002a3 3 0 013 3V12a3 3 0 00-3-3h-15a3 3 0 00-3 3v-1.854z" /><path d="M12 12.75a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0v-3.75a.75.75 0 01.75-.75zM15.75 13.5a.75.75 0 00-1.5 0v3.75a.75.75 0 001.5 0v-3.75zM8.25 13.5a.75.75 0 00-1.5 0v3.75a.75.75 0 001.5 0v-3.75z" /></svg>
                     New Notebook
                 </button>
-                <form id="notebook-form" class="mt-3 hidden">
+                <form id="notebook-form" class="mt-3 hidden" onsubmit="event.preventDefault(); createNotebook()">
                     <input id="new-notebook-name" type="text" placeholder="Notebook name" class="w-full p-3 rounded-l-lg bg-gray-800 text-white placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <button type="submit" class="p-3 rounded-r-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors shadow-md transform active:scale-95">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" clip-rule="evenodd" /></svg>
@@ -129,7 +132,7 @@
             </button>
             
             <!-- Notes List Panel -->
-            <div class="lg:col-span-1 p-6 rounded-2xl bg-gray-900 shadow-2xl border border-gray-800 flex flex-col h-[calc(100vh-48px)] lg:h-full overflow-y-auto">
+            <div class="lg:col-span-1 p-6 rounded-2xl bg-gray-900 shadow-2xl border border-gray-800 flex flex-col h-full overflow-y-auto">
                 <h2 class="text-2xl font-bold mb-4 text-white">Notes</h2>
                 <ul id="notes-list" class="space-y-2 flex-grow overflow-y-auto pr-2">
                     <!-- Note items will be rendered here by JavaScript -->
@@ -137,9 +140,9 @@
             </div>
             
             <!-- Note Editor and AI Assistant Panels -->
-            <div class="lg:col-span-2 flex flex-col gap-6 h-[calc(100vh-48px)] lg:h-full">
+            <div class="lg:col-span-2 flex flex-col h-full">
                 <!-- Note Editor -->
-                <div class="p-6 rounded-2xl bg-gray-900 shadow-2xl border border-gray-800 flex-grow flex flex-col">
+                <div class="p-6 rounded-2xl bg-gray-900 shadow-2xl border border-gray-800 flex-grow flex flex-col mb-6">
                     <div id="editor-container" class="flex flex-col h-full">
                         <div id="no-note-selected-message" class="flex items-center justify-center h-full text-center text-gray-500">
                             <p class="text-xl font-medium">Select a note or create a new one.</p>
@@ -160,7 +163,7 @@
                 </div>
             
                 <!-- AI Assistant -->
-                <div class="p-6 rounded-2xl bg-gray-900 shadow-2xl border border-gray-800 flex flex-col flex-grow">
+                <div class="ai-assistant-container p-6 rounded-2xl bg-gray-900 shadow-2xl border border-gray-800 flex flex-col">
                     <h3 class="text-2xl font-bold mb-4 text-white flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 mr-2 text-indigo-400"><path fill-rule="evenodd" d="M9.401 3.003c1.155-2.003 4.043-2.003 5.198 0 .426.74.9 1.503 1.35 2.28.45.778.855 1.583 1.256 2.404C18.397 8.846 20.505 10 22.5 10c-2.235 0-4.47-.615-5.647-1.758a.75.75 0 00-1.026-.008c-1.127 1.09-2.673 1.666-4.507 1.666S6.173 9.342 5.046 8.258a.75.75 0 00-1.025.008C2.5 9.385.25 10 .25 10c1.995 0 4.103-1.154 5.344-3.113A.75.75 0 006.5 6.48a.75.75 0 00-.077-1.189A.75.75 0 006 5.25c.036-.08.07-.156.108-.23c.307-.583.63-.645.92-.68a.75.75 0 00.75-1.391z" clip-rule="evenodd" /><path d="M12 11.25a.75.75 0 01.75.75v5.25a.75.75 0 01-1.5 0V12a.75.75 0 01.75-.75z" /><path d="M15.75 12a.75.75 0 00-1.5 0v5.25a.75.75 0 001.5 0V12zM8.25 12a.75.75 0 00-1.5 0v5.25a.75.75 0 001.5 0V12z" /></svg>
                         AI Assistant
@@ -182,11 +185,10 @@
     <script type="module">
         // Import all required Firebase modules from a CDN
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Firebase Configuration ---
-        // Your web app's Firebase configuration
+        // --- Firebase Configuration and Globals ---
         const firebaseConfig = {
             apiKey: "AIzaSyB7F1uRRiGdw489c_18aJeodbxrzsdFb5c",
             authDomain: "exonova-cd89c.firebaseapp.com",
@@ -196,7 +198,6 @@
             appId: "1:465326262278:web:1b7f8f62e1f46c5ca7db87",
             measurementId: "G-GGG45V0PEF"
         };
-        // Global variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
@@ -225,7 +226,6 @@
         const newNotebookNameInput = document.getElementById('new-notebook-name');
         const createNoteBtn = document.getElementById('create-note-btn');
         const notesList = document.getElementById('notes-list');
-        const editorContainer = document.getElementById('editor-container');
         const noNoteSelectedMessage = document.getElementById('no-note-selected-message');
         const noteTitleInput = document.getElementById('note-title');
         const noteContentTextarea = document.getElementById('note-content');
@@ -244,6 +244,9 @@
         let selectedNotebookId = null;
         let selectedNoteId = null;
 
+        // --- Listener Unsubscribe Functions ---
+        let unsubscribeNotesListener = null;
+
         // --- Helper Functions ---
         const showMessage = (msg, isError = false) => {
             messageBox.textContent = msg;
@@ -254,7 +257,20 @@
 
         const showUI = (element) => element.classList.remove('hidden');
         const hideUI = (element) => element.classList.add('hidden');
+        const showEditor = () => {
+            hideUI(noNoteSelectedMessage);
+            showUI(noteTitleInput);
+            showUI(noteContentTextarea);
+            showUI(editorButtons);
+        };
+        const hideEditor = () => {
+            showUI(noNoteSelectedMessage);
+            hideUI(noteTitleInput);
+            hideUI(noteContentTextarea);
+            hideUI(editorButtons);
+        };
 
+        // --- Render Functions (Crucial for UI updates) ---
         const renderNotebooks = () => {
             notebooksList.innerHTML = '';
             if (notebooks.length === 0) {
@@ -271,9 +287,12 @@
                     </button>
                 `;
                 li.addEventListener('click', () => {
-                    selectedNotebookId = nb.id;
-                    renderNotebooks();
-                    // Close sidebar on mobile
+                    if (selectedNotebookId !== nb.id) {
+                        selectedNotebookId = nb.id;
+                        selectedNoteId = null; // Reset note selection
+                        renderNotebooks(); // Re-render to show new selection
+                        setupNotesListener(); // Re-attach notes listener for the new notebook
+                    }
                     if (window.innerWidth < 1024) {
                         sidebar.classList.add('-translate-x-full');
                     }
@@ -288,15 +307,22 @@
 
         const renderNotes = () => {
             notesList.innerHTML = '';
-            if (notes.length === 0) {
+            const filteredNotes = notes.filter(n => n.notebookId === selectedNotebookId);
+            
+            if (filteredNotes.length === 0) {
                 notesList.innerHTML = `<p class="text-gray-500 text-center mt-4">No notes in this notebook. Create one!</p>`;
-                showNoteEditor(null);
+                hideEditor();
                 return;
             }
             // Sort notes by last updated time
-            notes.sort((a, b) => (b.updatedAt?.toDate()?.getTime() || 0) - (a.updatedAt?.toDate()?.getTime() || 0));
+            filteredNotes.sort((a, b) => (b.updatedAt?.toDate()?.getTime() || 0) - (a.updatedAt?.toDate()?.getTime() || 0));
+            
+            // If selected note is deleted, select the first one
+            if (!selectedNoteId || !filteredNotes.some(n => n.id === selectedNoteId)) {
+                selectedNoteId = filteredNotes[0].id;
+            }
 
-            notes.forEach(note => {
+            filteredNotes.forEach(note => {
                 const li = document.createElement('li');
                 li.className = `p-4 rounded-xl cursor-pointer shadow-md transition-all duration-200 ${selectedNoteId === note.id ? 'bg-indigo-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`;
                 const updatedAt = note.updatedAt ? new Date(note.updatedAt.toDate()).toLocaleString() : 'N/A';
@@ -306,32 +332,71 @@
                 `;
                 li.addEventListener('click', () => {
                     selectedNoteId = note.id;
-                    showNoteEditor(note);
                     renderNotes();
                 });
                 notesList.appendChild(li);
             });
-            const noteToDisplay = notes.find(n => n.id === selectedNoteId);
-            showNoteEditor(noteToDisplay);
-        };
-        
-        const showNoteEditor = (note) => {
-            if (note) {
-                hideUI(noNoteSelectedMessage);
-                showUI(noteTitleInput);
-                showUI(noteContentTextarea);
-                showUI(editorButtons);
-                noteTitleInput.value = note.title || '';
-                noteContentTextarea.value = note.content || '';
+            const noteToDisplay = filteredNotes.find(n => n.id === selectedNoteId);
+            if (noteToDisplay) {
+                showEditor();
+                noteTitleInput.value = noteToDisplay.title || '';
+                noteContentTextarea.value = noteToDisplay.content || '';
             } else {
-                showUI(noNoteSelectedMessage);
-                hideUI(noteTitleInput);
-                hideUI(noteContentTextarea);
-                hideUI(editorButtons);
+                hideEditor();
             }
         };
 
-        // --- Firebase Functions ---
+        // --- Firestore Listeners ---
+        const setupNotesListener = () => {
+            // Detach the old listener if it exists
+            if (unsubscribeNotesListener) {
+                unsubscribeNotesListener();
+            }
+
+            if (!userId || !selectedNotebookId) {
+                notes = [];
+                renderNotes();
+                return;
+            }
+
+            // Attach a new listener for the selected notebook
+            const notesRef = collection(db, 'artifacts', appId, 'users', userId, 'notes');
+            const q = query(notesRef, where('notebookId', '==', selectedNotebookId));
+            unsubscribeNotesListener = onSnapshot(q, (snapshot) => {
+                notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderNotes();
+            });
+        };
+
+        // --- Main App Flow ---
+        const setupApp = (user) => {
+            userId = user.uid;
+            userIdSpan.textContent = userId;
+            showUI(appContainer);
+            hideUI(authContainer);
+
+            // Listener for notebooks
+            const notebooksRef = collection(db, 'artifacts', appId, 'users', userId, 'notebooks');
+            onSnapshot(notebooksRef, (snapshot) => {
+                const fetchedNotebooks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                notebooks = fetchedNotebooks;
+                
+                // If selected notebook is deleted, select the first one
+                if (notebooks.length > 0 && (!selectedNotebookId || !notebooks.some(nb => nb.id === selectedNotebookId))) {
+                    selectedNotebookId = notebooks[0].id;
+                    setupNotesListener();
+                } else if (notebooks.length === 0) {
+                    selectedNotebookId = null;
+                    setupNotesListener();
+                }
+                renderNotebooks();
+            });
+            
+            // Initial call to setup notes listener
+            setupNotesListener();
+        };
+
+        // --- Event Handlers (Firestore Actions) ---
         const handleAuth = async () => {
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
@@ -352,8 +417,7 @@
 
         const handleLogout = () => signOut(auth);
 
-        const createNotebook = async (e) => {
-            e.preventDefault();
+        const createNotebook = async () => {
             const name = newNotebookNameInput.value.trim();
             if (!name) {
                 showMessage("Notebook name cannot be empty.", true);
@@ -409,10 +473,16 @@
             }
         };
 
-        const updateNote = async (id, updatedFields) => {
+        const updateNote = async () => {
+            if (!selectedNoteId) return;
             try {
-                const noteRef = doc(db, 'artifacts', appId, 'users', userId, 'notes', id);
-                await updateDoc(noteRef, { ...updatedFields, updatedAt: new Date() });
+                const noteRef = doc(db, 'artifacts', appId, 'users', userId, 'notes', selectedNoteId);
+                const updatedFields = {
+                    title: noteTitleInput.value,
+                    content: noteContentTextarea.value,
+                    updatedAt: new Date()
+                };
+                await updateDoc(noteRef, updatedFields);
             } catch (e) {
                 console.error("Error updating note: ", e);
                 showMessage("Failed to update note.", true);
@@ -446,7 +516,7 @@
             const aiPrompt = aiPromptInput.value.trim();
             if (!aiPrompt) return;
             aiSendBtn.disabled = true;
-            aiSendBtn.textContent = 'Thinking...';
+            aiSendBtn.innerHTML = 'Sending...';
             aiResponseDiv.textContent = 'Thinking...';
 
             const note = notes.find(n => n.id === selectedNoteId);
@@ -456,7 +526,7 @@
 
             const chatHistory = [{ role: "user", parts: [{ text: promptWithContext }] }];
             const payload = { contents: chatHistory };
-            const apiKey = "AIzaSyAFbJJ4Q16Uh-CVC36kao3XTDOUUtc6VGo"
+            const apiKey = ""
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             let resultText = "Failed to get a response from the AI. Please try again.";
@@ -493,13 +563,12 @@
 
             aiResponseDiv.textContent = resultText;
             aiSendBtn.disabled = false;
-            aiSendBtn.textContent = 'Send';
+            aiSendBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M10.5 8.25L14.25 12L10.5 15.75L12 18L18 12L12 6L10.5 8.25Z" fill="#FFFFFF"/></svg>';
             aiPromptInput.value = '';
         };
 
         // --- Event Listeners ---
         window.addEventListener('load', () => {
-            // Sign-in with the custom token provided by the canvas environment
             const handleSignIn = async () => {
                 if (initialAuthToken) {
                     try {
@@ -518,48 +587,12 @@
         onAuthStateChanged(auth, (user) => {
             hideUI(loadingSpinner);
             if (user) {
-                userId = user.uid;
-                userIdSpan.textContent = userId;
-                showUI(appContainer);
-                hideUI(authContainer);
-                setupFirestoreListeners();
+                setupApp(user);
             } else {
-                userId = null;
-                showUI(authContainer);
                 hideUI(appContainer);
+                showUI(authContainer);
             }
         });
-
-        const setupFirestoreListeners = () => {
-            // Listener for notebooks
-            const notebooksRef = collection(db, 'artifacts', appId, 'users', userId, 'notebooks');
-            onSnapshot(notebooksRef, (snapshot) => {
-                notebooks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (notebooks.length > 0 && (!selectedNotebookId || !notebooks.some(nb => nb.id === selectedNotebookId))) {
-                    selectedNotebookId = notebooks[0].id;
-                } else if (notebooks.length === 0) {
-                    selectedNotebookId = null;
-                }
-                renderNotebooks();
-            });
-
-            // Listener for notes
-            const notesRef = collection(db, 'artifacts', appId, 'users', userId, 'notes');
-            onSnapshot(notesRef, (snapshot) => {
-                notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const filteredNotes = notes.filter(n => n.notebookId === selectedNotebookId);
-                
-                // If the selected note is not in the filtered list, select the first one
-                if (filteredNotes.length > 0 && (!selectedNoteId || !filteredNotes.some(n => n.id === selectedNoteId))) {
-                    selectedNoteId = filteredNotes[0].id;
-                } else if (filteredNotes.length === 0) {
-                    selectedNoteId = null;
-                }
-
-                notes = filteredNotes;
-                renderNotes();
-            });
-        };
 
         // Auth listeners
         authButton.addEventListener('click', handleAuth);
@@ -580,18 +613,8 @@
 
         // Note listeners
         createNoteBtn.addEventListener('click', createNote);
-        noteTitleInput.addEventListener('input', () => {
-            const currentNote = notes.find(n => n.id === selectedNoteId);
-            if (currentNote) {
-                updateNote(selectedNoteId, { title: noteTitleInput.value });
-            }
-        });
-        noteContentTextarea.addEventListener('input', () => {
-            const currentNote = notes.find(n => n.id === selectedNoteId);
-            if (currentNote) {
-                updateNote(selectedNoteId, { content: noteContentTextarea.value });
-            }
-        });
+        noteTitleInput.addEventListener('input', updateNote);
+        noteContentTextarea.addEventListener('input', updateNote);
         deleteNoteBtn.addEventListener('click', deleteNote);
         exportNoteBtn.addEventListener('click', handleExport);
 
