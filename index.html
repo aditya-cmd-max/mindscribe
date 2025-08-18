@@ -4,421 +4,294 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collaborative Chat App</title>
+    <!-- Use a modern, easy-to-read font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        :root {
+            --primary-color: #6366F1;
+            --primary-light: #C7D2FE;
+            --background-color: #F8FAFC;
+            --chat-bg-dark: #E2E8F0;
+            --chat-bg-light: #E0E7FF;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
+            background-color: var(--background-color);
         }
-        /* Custom modal styles */
-        .modal {
+
+        /* Hide scrollbar for a cleaner look */
+        .chat-container::-webkit-scrollbar {
             display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
         }
-        .modal-content {
-            background-color: #fff;
-            padding: 24px;
-            border-radius: 1rem;
-            max-width: 90%;
-            width: 500px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+        .chat-container {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 md:p-8">
 
-    <!-- Main Container -->
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-2xl flex flex-col h-[80vh]">
+    <!-- Main application container -->
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[80vh]">
 
         <!-- Header -->
-        <div class="bg-gray-800 text-white p-4 flex justify-between items-center rounded-t-2xl">
-            <h1 class="text-xl font-bold">Simple Chat App</h1>
-            <div id="status-container" class="flex items-center text-sm">
-                <span id="auth-status" class="mr-2">Connecting...</span>
-                <span id="display-user-id" class="text-xs bg-gray-700 px-2 py-1 rounded-full opacity-0 transition-opacity duration-300"></span>
+        <header class="bg-indigo-600 text-white p-4 md:p-5 flex justify-between items-center shadow-lg">
+            <h1 class="text-xl md:text-2xl font-bold">Collaborative Chat</h1>
+            <div id="user-id-display" class="bg-indigo-700 text-xs md:text-sm font-mono px-3 py-1 rounded-full opacity-80">
+                User ID: <span id="user-id-text">Loading...</span>
             </div>
-        </div>
+        </header>
 
-        <!-- Chat Messages Container -->
-        <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4">
-            <!-- Messages will be injected here -->
-            <div class="text-center text-gray-500 my-4">No messages yet. Start the conversation!</div>
-        </div>
-
-        <!-- Message Input Area -->
-        <div class="bg-gray-100 p-4 border-t border-gray-200 rounded-b-2xl">
-            <div class="flex flex-col space-y-2">
-                <div class="flex space-x-2">
-                    <button id="summarize-btn" class="bg-purple-500 text-white rounded-full p-3 hover:bg-purple-600 transition-colors duration-200 text-sm font-semibold whitespace-nowrap">
-                        ✨ Summarize Chat
-                    </button>
-                    <div id="loading-indicator" class="hidden text-gray-500 flex items-center justify-center p-2">
-                        <span>Loading...</span>
-                    </div>
-                </div>
-                <form id="message-form" class="flex space-x-2">
-                    <input type="text" id="message-input" placeholder="Type a message or use '@gemini' for AI help..." class="flex-1 rounded-full p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all">
-                    <button type="submit" class="bg-gray-800 text-white rounded-full p-3 hover:bg-gray-700 transition-colors duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </button>
-                </form>
+        <!-- Chat messages container -->
+        <main id="chat-messages" class="flex-grow p-4 overflow-y-auto chat-container space-y-4">
+            <!-- Messages will be dynamically inserted here -->
+            <div id="loading-indicator" class="text-center text-gray-500 mt-10">
+                <svg class="animate-spin h-8 w-8 text-indigo-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-2">Connecting...</p>
             </div>
-        </div>
+        </main>
 
-    </div>
-
-    <!-- Summary Modal -->
-    <div id="summary-modal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Chat Summary</h3>
-                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        <!-- Message input area -->
+        <footer class="p-4 md:p-5 bg-gray-50 border-t border-gray-200">
+            <div class="flex space-x-3">
+                <input type="text" id="message-input" placeholder="Type a message..."
+                       class="flex-grow p-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-800">
+                <button id="send-button"
+                        class="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 transform active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                     </svg>
                 </button>
             </div>
-            <div id="summary-content" class="max-h-80 overflow-y-auto">
-                <!-- Summary will be injected here -->
-            </div>
-        </div>
-    </div>
+        </footer>
 
+    </div>
 
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Firebase & Gemini Configuration ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        const GEMINI_USER_ID = 'gemini-bot-22';
-        const geminiApiKey = "";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
-
-        // Global variables for Firebase instances
+        // Global variables for Firebase services
         let app, db, auth;
         let userId;
 
+        // --- REPLACE THE FOLLOWING WITH YOUR OWN FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7F1uRRiGdw489c_18aJeodbxrzsdFb5c",
+            authDomain: "exonova-cd89c.firebaseapp.com",
+            projectId: "exonova-cd89c",
+            storageBucket: "exonova-cd89c.firebasestorage.app",
+            messagingSenderId: "465326262278",
+            appId: "1:465326262278:web:1b7f8f62e1f46c5ca7db87"
+        };
+        // -----------------------------------------------------------
+
         /**
-         * Initializes Firebase and sets up authentication.
+         * Converts a Firestore Timestamp object to a formatted date string.
+         * @param {Object} timestamp - The Firestore Timestamp object.
+         * @returns {string} The formatted date and time string.
          */
-        async function initializeAppAndAuth() {
-            try {
-                // Initialize Firebase
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
+        function formatTimestamp(timestamp) {
+            if (!timestamp || !timestamp.seconds) return 'Sending...';
+            const date = new Date(timestamp.seconds * 1000);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
 
-                // Sign in using the custom token if available, otherwise anonymously
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
+            let dateString;
+            if (date.toDateString() === today.toDateString()) {
+                dateString = 'Today';
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                dateString = 'Yesterday';
+            } else {
+                dateString = date.toLocaleDateString();
+            }
 
-                // Handle auth state changes
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        // Display the user ID
-                        const displayUserIdEl = document.getElementById('display-user-id');
-                        if (displayUserIdEl) {
-                            displayUserIdEl.innerHTML = `User ID: ${userId.substring(0, 8)}...`;
-                            displayUserIdEl.style.opacity = 1;
-                        }
-                        const authStatusEl = document.getElementById('auth-status');
-                        if (authStatusEl) {
-                            authStatusEl.innerHTML = 'Connected';
-                        }
-                        
-                        // Start listening for messages after authentication
-                        listenForMessages();
-                    } else {
-                        console.log("User is signed out.");
-                        userId = null;
-                        const authStatusEl = document.getElementById('auth-status');
-                        if (authStatusEl) {
-                             authStatusEl.innerHTML = 'Disconnected';
-                        }
-                        const displayUserIdEl = document.getElementById('display-user-id');
-                        if (displayUserIdEl) {
-                            displayUserIdEl.innerHTML = '';
-                            displayUserIdEl.style.opacity = 0;
-                        }
-                    }
-                });
+            const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return `${dateString}, ${timeString}`;
+        }
 
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-                const authStatusEl = document.getElementById('auth-status');
-                if (authStatusEl) {
-                    authStatusEl.innerHTML = 'Error';
-                }
+        /**
+         * Renders a single message to the UI.
+         * @param {Object} message - The message data object.
+         * @param {string} message.text - The message text.
+         * @param {string} message.userId - The ID of the user who sent the message.
+         * @param {Object} message.timestamp - The Firestore Timestamp object.
+         * @param {boolean} isCurrentUser - True if the message was sent by the current user.
+         */
+        function renderMessage(message, isCurrentUser) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `max-w-[70%] md:max-w-[60%] p-3 rounded-xl shadow-md transition-all duration-200 ease-in-out transform` +
+                ` ${isCurrentUser ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'}`;
+
+            const messageText = document.createElement('p');
+            messageText.className = 'break-words text-sm md:text-base';
+            messageText.textContent = message.text;
+
+            const messageMeta = document.createElement('div');
+            messageMeta.className = `text-xs mt-1 text-right italic ${isCurrentUser ? 'text-indigo-200' : 'text-gray-500'}`;
+            
+            const senderIdSpan = document.createElement('span');
+            senderIdSpan.className = 'font-mono break-all opacity-70';
+            senderIdSpan.textContent = isCurrentUser ? 'You' : message.userId.substring(0, 8) + '...';
+
+            const timestampSpan = document.createElement('span');
+            timestampSpan.textContent = ` • ${formatTimestamp(message.timestamp)}`;
+
+            messageMeta.appendChild(senderIdSpan);
+            messageMeta.appendChild(timestampSpan);
+            
+            messageBubble.appendChild(messageText);
+            messageBubble.appendChild(messageMeta);
+            messageElement.appendChild(messageBubble);
+
+            messagesContainer.appendChild(messageElement);
+        }
+
+        /**
+         * Clears all messages from the chat container.
+         */
+        function clearMessages() {
+            const messagesContainer = document.getElementById('chat-messages');
+            while (messagesContainer.firstChild) {
+                messagesContainer.removeChild(messagesContainer.firstChild);
             }
         }
 
-        // Wait for the window to load before starting
-        window.onload = initializeAppAndAuth;
+        /**
+         * Displays a message box for a specific duration.
+         * @param {string} text - The message to display.
+         */
+        function showMessageBox(text) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageBox = document.createElement('div');
+            messageBox.className = 'w-full text-center text-gray-500 italic p-2 rounded-lg bg-gray-100 mb-2';
+            messageBox.textContent = text;
+            messagesContainer.appendChild(messageBox);
+            setTimeout(() => {
+                messageBox.remove();
+            }, 5000);
+        }
 
         /**
-         * Renders a single message in the chat container.
-         * @param {Object} message - The message data from Firestore.
+         * Sends a new message to the Firestore database.
          */
-        function renderMessage(message) {
-            const container = document.getElementById('messages-container');
-            if (!container) return; // Exit if container doesn't exist
+        async function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const messageText = messageInput.value.trim();
 
-            const isCurrentUser = message.userId === userId;
-            const isGemini = message.userId === GEMINI_USER_ID;
-            const messageAlignClass = isCurrentUser ? 'justify-end' : 'justify-start';
-            let bubbleBgClass = 'bg-gray-300 text-gray-800';
-            let textColor = 'text-gray-600';
-            let name = `User: ${message.userId.substring(0, 8)}...`;
-
-            if (isCurrentUser) {
-                bubbleBgClass = 'bg-blue-500 text-white';
-                textColor = 'text-blue-200';
-                name = 'You';
-            } else if (isGemini) {
-                bubbleBgClass = 'bg-green-500 text-white';
-                textColor = 'text-green-200';
-                name = 'Gemini Bot ✨';
+            if (messageText === '') {
+                return; // Do not send empty messages
             }
 
-            const messageHtml = `
-                <div class="flex ${messageAlignClass}">
-                    <div class="max-w-xs sm:max-w-md p-3 rounded-xl shadow ${bubbleBgClass}">
-                        <div class="font-bold text-xs mb-1 ${textColor}">
-                            ${name}
-                        </div>
-                        <div>${message.text}</div>
-                        <div class="text-right text-xs mt-1 ${textColor}">
-                            ${new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.innerHTML += messageHtml; // Use += to append new messages
-            container.scrollTop = container.scrollHeight; // Auto-scroll to the latest message
-        }
-
-        /**
-         * Listens for real-time updates to the 'messages' collection.
-         */
-        function listenForMessages() {
-            const messagesRef = collection(db, `artifacts/${appId}/public/data/messages`);
-            // Order messages by timestamp for correct display
-            const q = query(messagesRef, orderBy("timestamp"));
-
-            onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('messages-container');
-                if (!container) return;
-                
-                // Clear the container before re-rendering all messages to prevent duplicates
-                container.innerHTML = '';
-                
-                snapshot.forEach((doc) => {
-                    const message = doc.data();
-                    renderMessage(message);
-                });
-
-                // Display a "No messages" text if there are none
-                if (snapshot.empty) {
-                    container.innerHTML = `<div class="text-center text-gray-500 my-4">No messages yet. Start the conversation!</div>`;
-                }
-            });
-        }
-
-        /**
-         * Handles the form submission to send a new message.
-         * @param {Event} event - The form submission event.
-         */
-        async function sendMessage(event) {
-            event.preventDefault();
-
-            const input = document.getElementById('message-input');
-            const messageText = input.value.trim();
-
-            if (messageText === '' || !userId) {
+            // Await authentication before trying to send
+            if (!userId) {
+                showMessageBox("Please wait, connecting to the server...");
                 return;
             }
 
-            const isGeminiCommand = messageText.startsWith('@gemini');
-
-            if (isGeminiCommand) {
-                const userPrompt = messageText.substring('@gemini'.length).trim();
-                input.value = '';
-                await sendBotMessage(userPrompt);
-            } else {
-                try {
-                    // Add a new document to the messages collection
-                    await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
-                        userId: userId,
-                        text: messageText,
-                        timestamp: Date.now()
-                    });
-                    input.value = ''; // Clear the input field
-                } catch (error) {
-                    console.error("Error writing new message to Firestore:", error);
-                }
-            }
-        }
-
-        /**
-         * Sends a message from the Gemini Bot.
-         * @param {string} userPrompt - The user's prompt for the bot.
-         */
-        async function sendBotMessage(userPrompt) {
-            const loadingIndicator = document.getElementById('loading-indicator');
-            loadingIndicator.classList.remove('hidden');
-
             try {
-                const response = await callGeminiAPI(userPrompt);
-                const botResponse = response.text;
+                // Add a new document to the 'chat_messages' collection
+                const chatCollection = collection(db, `chat_messages`);
+                await addDoc(chatCollection, {
+                    text: messageText,
+                    userId: userId,
+                    timestamp: serverTimestamp() // Use a server timestamp for consistency
+                });
                 
-                // Add the bot's response to Firestore
-                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
-                    userId: GEMINI_USER_ID,
-                    text: botResponse,
-                    timestamp: Date.now()
-                });
-            } catch (error) {
-                console.error("Error calling Gemini API:", error);
-                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
-                    userId: GEMINI_USER_ID,
-                    text: "Sorry, I couldn't generate a response. Please try again later.",
-                    timestamp: Date.now()
-                });
-            } finally {
-                loadingIndicator.classList.add('hidden');
+                // Clear the input field after sending
+                messageInput.value = '';
+                messageInput.focus();
+
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showMessageBox("Error sending message. Please try again.");
             }
         }
 
         /**
-         * Calls the Gemini API to get a text response.
-         * @param {string} prompt - The text prompt for the LLM.
-         * @returns {Promise<Object>} A promise that resolves with the API response.
+         * Initializes Firebase and sets up the real-time listener.
          */
-        async function callGeminiAPI(prompt) {
-            const chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-            const payload = { contents: chatHistory };
+        async function initFirebaseAndChat() {
+            // Initialize Firebase services
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
 
-            let attempts = 0;
-            const maxAttempts = 5;
-            let delay = 1000;
+            // Handle user authentication
+            await signInAnonymously(auth);
 
-            while (attempts < maxAttempts) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+            // Wait for auth state to be ready to get the user ID
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    document.getElementById('user-id-text').textContent = userId;
+                    document.getElementById('loading-indicator').style.display = 'none';
+
+                    // Set up real-time listener for chat messages
+                    const chatCollection = collection(db, `chat_messages`);
+                    
+                    // The onSnapshot listener provides real-time updates.
+                    onSnapshot(chatCollection, (querySnapshot) => {
+                        const messages = [];
+                        querySnapshot.forEach((doc) => {
+                            messages.push(doc.data());
+                        });
+
+                        // Sort the messages by timestamp in memory (no orderBy)
+                        messages.sort((a, b) => {
+                            // Check if timestamps are valid before comparing
+                            if (a.timestamp && b.timestamp) {
+                                return a.timestamp.seconds - b.timestamp.seconds;
+                            }
+                            // Push items with invalid timestamps to the end
+                            return a.timestamp ? -1 : 1; 
+                        });
+
+                        clearMessages(); // Clear old messages before rendering new ones
+                        messages.forEach(msg => {
+                            renderMessage(msg, msg.userId === userId);
+                        });
+
+                        // Scroll to the bottom of the chat window
+                        const messagesContainer = document.getElementById('chat-messages');
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                    }, (error) => {
+                        console.error("Error listening for messages: ", error);
+                        showMessageBox("Error loading chat messages. Please refresh the page.");
                     });
-
-                    if (!response.ok) {
-                        if (response.status === 429) { // Too Many Requests
-                            attempts++;
-                            console.warn(`Attempt ${attempts}: API rate limit exceeded. Retrying in ${delay / 1000}s...`);
-                            await new Promise(res => setTimeout(res, delay));
-                            delay *= 2; // Exponential backoff
-                            continue;
-                        } else {
-                            throw new Error(`API call failed with status: ${response.status}`);
-                        }
-                    }
-
-                    const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        return result.candidates[0].content.parts[0];
-                    } else {
-                        throw new Error("Invalid API response format");
-                    }
-                } catch (error) {
-                    console.error("Fetch error:", error);
-                    throw error;
+                } else {
+                    userId = null;
+                    document.getElementById('user-id-text').textContent = "Not signed in";
                 }
-            }
-            throw new Error("Failed to get API response after multiple retries.");
-        }
-
-        /**
-         * Fetches all messages and summarizes the chat.
-         */
-        async function summarizeChat() {
-            const loadingIndicator = document.getElementById('loading-indicator');
-            loadingIndicator.classList.remove('hidden');
-            const summaryModal = document.getElementById('summary-modal');
-            const summaryContent = document.getElementById('summary-content');
-
-            try {
-                // Fetch all messages
-                const messagesRef = collection(db, `artifacts/${appId}/public/data/messages`);
-                const q = query(messagesRef, orderBy("timestamp"));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    summaryContent.innerHTML = "<p>The chat is empty. There is nothing to summarize.</p>";
-                    summaryModal.style.display = 'flex';
-                    return;
-                }
-
-                // Format chat history for the prompt
-                let chatHistoryText = "Summarize the following conversation:\n\n";
-                querySnapshot.forEach(doc => {
-                    const message = doc.data();
-                    const userName = message.userId === userId ? 'User' : (message.userId === GEMINI_USER_ID ? 'Gemini Bot' : `User-${message.userId.substring(0, 4)}`);
-                    chatHistoryText += `${userName}: ${message.text}\n`;
-                });
-
-                const response = await callGeminiAPI(chatHistoryText);
-                summaryContent.innerHTML = `<p>${response.text}</p>`;
-
-            } catch (error) {
-                console.error("Error summarizing chat:", error);
-                summaryContent.innerHTML = `<p class="text-red-500">Failed to generate a summary. Please try again later.</p>`;
-            } finally {
-                loadingIndicator.classList.add('hidden');
-                summaryModal.style.display = 'flex';
-            }
+            });
         }
 
         // --- Event Listeners ---
-        const messageForm = document.getElementById('message-form');
-        if (messageForm) {
-            messageForm.addEventListener('submit', sendMessage);
-        }
+        document.addEventListener('DOMContentLoaded', initFirebaseAndChat);
+        document.getElementById('send-button').addEventListener('click', sendMessage);
+        document.getElementById('message-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
 
-        const summarizeBtn = document.getElementById('summarize-btn');
-        if (summarizeBtn) {
-            summarizeBtn.addEventListener('click', summarizeChat);
-        }
-        
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', () => {
-                document.getElementById('summary-modal').style.display = 'none';
-            });
-        }
-        
     </script>
-
 </body>
 </html>
