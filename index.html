@@ -57,14 +57,14 @@
 
         // --- IMPORTANT: Firestore Security Rules ---
         // For this to work, ensure your Firestore rules are set to:
-        // rules_version = '2';
-        // service cloud.firestore {
-        //   match /databases/{database}/documents {
-        //     match /artifacts/{appId}/public/data/messages/{documentId} {
-        //       allow read, write: if request.auth != null;
-        //     }
-        //   }
-        // }
+         rules_version = '2';
+         service cloud.firestore {
+           match /databases/{database}/documents {
+             match /artifacts/{appId}/public/data/messages/{documentId} {
+               allow read, write: if request.auth != null;
+             }
+           }
+         }
 
         // Global variables for user and app ID
         let userId;
