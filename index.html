@@ -117,7 +117,10 @@
                         </svg>
                         <h3 class="text-xl font-bold text-gray-700">AI Summary</h3>
                     </div>
-                    <!-- New button to summarize URL -->
+                </div>
+
+                <!-- URL Summary Section -->
+                <div class="p-4 bg-gray-100 rounded-lg mb-4">
                     <div class="flex space-x-2">
                         <input id="url-input" type="text" class="flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Paste URL here..." />
                         <button id="summarize-url-btn" class="flex items-center space-x-2 px-5 py-2 bg-blue-500 text-white font-medium rounded-full shadow-md hover:bg-blue-600 transition-colors disabled:bg-gray-400">
@@ -131,8 +134,9 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Note Summary Section -->
                 <div class="flex items-center justify-end mb-4">
-                    <!-- Original button to summarize notes content -->
                     <button id="summarize-btn" class="flex items-center space-x-2 px-5 py-2 bg-blue-500 text-white font-medium rounded-full shadow-md hover:bg-blue-600 transition-colors disabled:bg-gray-400">
                         <span>Get Summary from Notes</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right">
@@ -207,16 +211,7 @@
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         // Global variables provided by the environment
-        const firebaseConfig = {
-          apiKey: "AIzaSyB7F1uRRiGdw489c_18aJeodbxrzsdFb5c",
-          authDomain: "exonova-cd89c.firebaseapp.com",
-          databaseURL: "https://exonova-cd89c-default-rtdb.firebaseio.com",
-          projectId: "exonova-cd89c",
-          storageBucket: "exonova-cd89c.firebasestorage.app",
-          messagingSenderId: "465326262278",
-          appId: "1:465326262278:web:1b7f8f62e1f46c5ca7db87",
-          measurementId: "G-GGG45V0PEF"
-        };
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
@@ -280,6 +275,8 @@
                     } catch (error) {
                         console.error("Custom token sign-in failed:", error);
                     }
+                } else {
+                    await signInAnonymously(auth);
                 }
 
                 // Listen for authentication state changes
@@ -304,7 +301,7 @@
 
         // 2. UI Updates based on Auth State
         const updateAuthUI = (user) => {
-            if (user) {
+            if (user && !user.isAnonymous) {
                 authButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="7 6 12 12 7 18"/><line x1="12" x2="21" y1="12" y2="12"/></svg>`;
                 authButton.classList.remove('bg-blue-500', 'hover:bg-blue-600');
                 authButton.classList.add('bg-red-500', 'hover:bg-red-600');
@@ -319,20 +316,25 @@
                 newNoteBtn.classList.remove('hidden');
                 mainContent.classList.remove('hidden');
             } else {
+                 // Anonymous or not signed in
                 authButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>`;
                 authButton.classList.remove('bg-red-500', 'hover:bg-red-600');
                 authButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
                 authButton.title = "Sign In with Google";
                 
                 userProfileDiv.classList.add('hidden');
-                newNoteBtn.classList.add('hidden');
-                mainContent.classList.add('hidden');
-                notesList.innerHTML = `<div class="text-center p-4 text-gray-500"><p>Please sign in to save and access your notes.</p></div>`;
+                newNoteBtn.classList.remove('hidden'); // Allow anonymous users to create notes
+                mainContent.classList.remove('hidden'); // Allow them to use the app
+                notesList.innerHTML = `<div class="text-center p-4 text-gray-500"><p>You are using a temporary account. Sign in to save your notes permanently!</p></div>`;
             }
         };
 
         // 3. Firestore Listener and UI Management
         const setupFirestoreListener = () => {
+            if (!userId) {
+                console.error("Firestore listener cannot be set up without a user ID.");
+                return;
+            }
             const notesCollection = collection(db, `artifacts/${appId}/users/${userId}/notes`);
             onSnapshot(notesCollection, (snapshot) => {
                 allNotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -472,6 +474,59 @@
         };
 
         // 5. AI Integration (Gemini API)
+        const callGeminiAPI = async (prompt, isQuiz = false) => {
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+            };
+            if (isQuiz) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        "type": "ARRAY",
+                        "items": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "question": { "type": "STRING" },
+                                "options": { "type": "ARRAY", "items": { "type": "STRING" } },
+                                "correctAnswer": { "type": "STRING" }
+                            }
+                        }
+                    }
+                };
+            }
+            
+            const apiKey = "AIzaSyAFbJJ4Q16Uh-CVC36kao3XTDOUUtc6VGo";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            let response;
+            let retryCount = 0;
+            const MAX_RETRIES = 5;
+            const BASE_DELAY = 1000;
+
+            while (retryCount < MAX_RETRIES) {
+                response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status !== 429) {
+                    break;
+                }
+
+                retryCount++;
+                const delay = BASE_DELAY * Math.pow(2, retryCount - 1);
+                await new Promise(res => setTimeout(res, delay));
+            }
+
+            if (!response.ok) {
+                throw new Error(`API call failed with status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result;
+        };
+        
         const generateSummary = async () => {
             if (!currentNote || currentNote.content.length < 50) {
                 summaryOutput.textContent = "Please write more content (at least 50 characters) to generate a summary.";
@@ -483,39 +538,7 @@
 
             try {
                 const prompt = `Summarize the following text in a concise and clear manner, highlighting the key points:\n\n${sanitizeText(currentNote.content)}`;
-
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                const payload = { contents: chatHistory };
-                const apiKey = "AIzaSyAFbJJ4Q16Uh-CVC36kao3XTDOUUtc6VGo";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-                let response;
-                let retryCount = 0;
-                const MAX_RETRIES = 5;
-                const BASE_DELAY = 1000;
-
-                while (retryCount < MAX_RETRIES) {
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.status !== 429) {
-                        break;
-                    }
-
-                    retryCount++;
-                    const delay = BASE_DELAY * Math.pow(2, retryCount - 1);
-                    await new Promise(res => setTimeout(res, delay));
-                }
-
-                if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status}`);
-                }
-
-                const result = await response.json();
+                const result = await callGeminiAPI(prompt);
                 const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (text) {
@@ -543,73 +566,16 @@
             summaryOutput.innerHTML = `<div class="flex items-center space-x-2"><svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Summarizing URL...</span></div>`;
 
             try {
-                // Use the browsing tool to get the content of the URL
-                const browsingPrompt = `Summarize the content of the following URL:\n\n${url}`;
-                
-                let response;
-                let retryCount = 0;
-                const MAX_RETRIES = 5;
-                const BASE_DELAY = 1000;
+                const prompt = `Summarize the content of the following URL: ${url}`;
+                const result = await callGeminiAPI(prompt);
+                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-                while (retryCount < MAX_RETRIES) {
-                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                role: 'user',
-                                parts: [{ text: browsingPrompt }]
-                            }],
-                            tools: [{
-                                functionDeclarations: [{
-                                    name: 'browsing.browse',
-                                    parameters: { type: 'object', properties: { url: { type: 'string' }, query: { type: 'string' } } },
-                                    description: 'Browse a web page and get its content.',
-                                }]
-                            }],
-                        }),
-                    });
-
-                    if (response.status !== 429) {
-                        break;
-                    }
-
-                    retryCount++;
-                    const delay = BASE_DELAY * Math.pow(2, retryCount - 1);
-                    await new Promise(res => setTimeout(res, delay));
-                }
-
-                if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                const toolCall = result?.candidates?.[0]?.content?.parts?.[0]?.functionCall;
-
-                if (toolCall && toolCall.name === 'browsing.browse') {
-                    // Call the browsing function with the extracted URL and query
-                    const browsingResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [
-                                { role: 'user', parts: [{ text: browsingPrompt }] },
-                                { role: 'model', parts: [{ functionCall: toolCall }] },
-                                { role: 'tool', parts: [{ functionResponse: { name: 'browsing.browse', response: await browse(toolCall.args.query, toolCall.args.url) } }] }
-                            ],
-                        }),
-                    });
-                    const browsingResult = await browsingResponse.json();
-                    const summary = browsingResult?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (summary) {
-                        summaryOutput.textContent = summary;
-                    } else {
-                        summaryOutput.textContent = "Unable to generate a summary for the URL. Please try again.";
-                    }
+                if (text) {
+                    summaryOutput.textContent = text;
                 } else {
-                    summaryOutput.textContent = "Unable to process the URL. Please ensure it's a valid link and try again.";
+                    summaryOutput.textContent = "Unable to generate a summary for the URL. Please try again.";
+                    console.error("API response structure is invalid:", result);
                 }
-
             } catch (error) {
                 console.error("Error summarizing URL:", error);
                 summaryOutput.textContent = "An error occurred while generating the URL summary. Please check the console for details.";
@@ -629,57 +595,7 @@
             
             try {
                 const prompt = `Based on the following text, generate 3 multiple-choice quiz questions. Each question should have a question text, an array of 4 options, and the correct answer. The options should be well-formed sentences or phrases, and not all options should be correct. Format the output as a JSON array of objects.`;
-
-                let chatHistory = [{ role: "user", parts: [{ text: prompt }, { text: sanitizeText(currentNote.content) }] }];
-                const payload = {
-                    contents: chatHistory,
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            "type": "ARRAY",
-                            "items": {
-                                "type": "OBJECT",
-                                "properties": {
-                                    "question": { "type": "STRING" },
-                                    "options": {
-                                        "type": "ARRAY",
-                                        "items": { "type": "STRING" }
-                                    },
-                                    "correctAnswer": { "type": "STRING" }
-                                }
-                            }
-                        }
-                    }
-                };
-                const apiKey = "AIzaSyAFbJJ4Q16Uh-CVC36kao3XTDOUUtc6VGo";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-                let response;
-                let retryCount = 0;
-                const MAX_RETRIES = 5;
-                const BASE_DELAY = 1000;
-
-                while (retryCount < MAX_RETRIES) {
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.status !== 429) {
-                        break;
-                    }
-
-                    retryCount++;
-                    const delay = BASE_DELAY * Math.pow(2, retryCount - 1);
-                    await new Promise(res => setTimeout(res, delay));
-                }
-
-                if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status}`);
-                }
-
-                const result = await response.json();
+                const result = await callGeminiAPI(prompt, true);
                 const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (jsonText) {
@@ -741,7 +657,7 @@
 
         // 6. Event Listeners
         authButton.addEventListener('click', async () => {
-            if (userId) {
+            if (userId && !auth.currentUser.isAnonymous) {
                 await signOut(auth);
             } else {
                 try {
