@@ -117,8 +117,24 @@
                         </svg>
                         <h3 class="text-xl font-bold text-gray-700">AI Summary</h3>
                     </div>
+                    <!-- New button to summarize URL -->
+                    <div class="flex space-x-2">
+                        <input id="url-input" type="text" class="flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Paste URL here..." />
+                        <button id="summarize-url-btn" class="flex items-center space-x-2 px-5 py-2 bg-blue-500 text-white font-medium rounded-full shadow-md hover:bg-blue-600 transition-colors disabled:bg-gray-400">
+                            <span>Summarize URL</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-2">
+                                <path d="M9 17L15 11" />
+                                <path d="M11 9L17 15" />
+                                <path d="M17 7L13.5 3.5c-.8-.8-2-.8-2.8 0l-5 5c-.8.8-.8 2 0 2.8l1.5 1.5" />
+                                <path d="M7 17L3.5 13.5c-.8-.8-.8-2 0-2.8l5-5c.8-.8 2-.8 2.8 0l1.5 1.5" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end mb-4">
+                    <!-- Original button to summarize notes content -->
                     <button id="summarize-btn" class="flex items-center space-x-2 px-5 py-2 bg-blue-500 text-white font-medium rounded-full shadow-md hover:bg-blue-600 transition-colors disabled:bg-gray-400">
-                        <span>Get Summary</span>
+                        <span>Get Summary from Notes</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right">
                             <path d="M5 12h14" />
                             <path d="m12 5 7 7-7 7" />
@@ -126,7 +142,7 @@
                     </button>
                 </div>
                 <div id="summary-output" class="bg-white rounded-lg p-4 text-sm text-gray-600 border border-gray-200">
-                    Click "Get Summary" to generate a summary of your notes.
+                    Click a summary button to generate a summary.
                 </div>
             </div>
 
@@ -227,6 +243,8 @@
         const noteTitleInput = document.getElementById('note-title-input');
         const noteContentTextarea = document.getElementById('note-content-textarea');
         const summarizeBtn = document.getElementById('summarize-btn');
+        const summarizeUrlBtn = document.getElementById('summarize-url-btn');
+        const urlInput = document.getElementById('url-input');
         const summaryOutput = document.getElementById('summary-output');
         const generateQuizBtn = document.getElementById('generate-quiz-btn');
         const quizOutput = document.getElementById('quiz-output');
@@ -386,7 +404,7 @@
                 noteTitleInput.value = currentNote.title || 'Untitled Note';
                 noteContentTextarea.value = currentNote.content || '';
                 mainContent.classList.remove('hidden');
-                summaryOutput.textContent = 'Click "Get Summary" to generate a summary of your notes.';
+                summaryOutput.textContent = 'Click a summary button to generate a summary.';
                 quizOutput.textContent = 'Click "Generate Quiz" to get a short quiz based on your notes.';
             } else {
                 noteTitleInput.value = '';
@@ -511,6 +529,92 @@
                 summaryOutput.textContent = "An error occurred while generating the summary. Please check the console for details.";
             } finally {
                 summarizeBtn.disabled = false;
+            }
+        };
+
+        const generateUrlSummary = async () => {
+            const url = urlInput.value;
+            if (!url) {
+                summaryOutput.textContent = "Please enter a URL to get a summary.";
+                return;
+            }
+
+            summarizeUrlBtn.disabled = true;
+            summaryOutput.innerHTML = `<div class="flex items-center space-x-2"><svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Summarizing URL...</span></div>`;
+
+            try {
+                // Use the browsing tool to get the content of the URL
+                const browsingPrompt = `Summarize the content of the following URL:\n\n${url}`;
+                
+                let response;
+                let retryCount = 0;
+                const MAX_RETRIES = 5;
+                const BASE_DELAY = 1000;
+
+                while (retryCount < MAX_RETRIES) {
+                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                role: 'user',
+                                parts: [{ text: browsingPrompt }]
+                            }],
+                            tools: [{
+                                functionDeclarations: [{
+                                    name: 'browsing.browse',
+                                    parameters: { type: 'object', properties: { url: { type: 'string' }, query: { type: 'string' } } },
+                                    description: 'Browse a web page and get its content.',
+                                }]
+                            }],
+                        }),
+                    });
+
+                    if (response.status !== 429) {
+                        break;
+                    }
+
+                    retryCount++;
+                    const delay = BASE_DELAY * Math.pow(2, retryCount - 1);
+                    await new Promise(res => setTimeout(res, delay));
+                }
+
+                if (!response.ok) {
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const toolCall = result?.candidates?.[0]?.content?.parts?.[0]?.functionCall;
+
+                if (toolCall && toolCall.name === 'browsing.browse') {
+                    // Call the browsing function with the extracted URL and query
+                    const browsingResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [
+                                { role: 'user', parts: [{ text: browsingPrompt }] },
+                                { role: 'model', parts: [{ functionCall: toolCall }] },
+                                { role: 'tool', parts: [{ functionResponse: { name: 'browsing.browse', response: await browse(toolCall.args.query, toolCall.args.url) } }] }
+                            ],
+                        }),
+                    });
+                    const browsingResult = await browsingResponse.json();
+                    const summary = browsingResult?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (summary) {
+                        summaryOutput.textContent = summary;
+                    } else {
+                        summaryOutput.textContent = "Unable to generate a summary for the URL. Please try again.";
+                    }
+                } else {
+                    summaryOutput.textContent = "Unable to process the URL. Please ensure it's a valid link and try again.";
+                }
+
+            } catch (error) {
+                console.error("Error summarizing URL:", error);
+                summaryOutput.textContent = "An error occurred while generating the URL summary. Please check the console for details.";
+            } finally {
+                summarizeUrlBtn.disabled = false;
             }
         };
 
@@ -691,6 +795,7 @@
         });
 
         summarizeBtn.addEventListener('click', generateSummary);
+        summarizeUrlBtn.addEventListener('click', generateUrlSummary); // New event listener for URL summary
         generateQuizBtn.addEventListener('click', generateQuiz);
 
         cancelDeleteBtn.addEventListener('click', () => {
