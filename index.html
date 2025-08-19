@@ -5,17 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Futuro AI | Next-Gen Chat Assistant by Aditya Jha</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="logo.png">
-    
-    <!-- Firebase App (core Firebase SDK) -->
+    <!-- Firebase App (core) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <!-- Firebase Auth -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <!-- Firebase Firestore -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logo.png">
     
     <style>
         body {
@@ -132,144 +131,273 @@
             0%, 80%, 100% { transform: translateY(0); }
             40% { transform: translateY(-6px); }
         }
+        .history-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        .history-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: rgba(59, 130, 246, 0.5);
+        }
+        .history-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-left-color: #3b82f6;
+        }
+        .auth-modal {
+            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.7);
+        }
         .auth-container {
-            background: rgba(17, 24, 39, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(15,12,41,0.95), rgba(36,36,62,0.95));
+            box-shadow: 0 0 40px rgba(236, 72, 153, 0.3);
         }
-        .auth-input {
-            background: rgba(31, 41, 55, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .auth-input:focus {
-            border-color: rgba(59, 130, 246, 0.5);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-        .auth-btn {
-            background: linear-gradient(45deg, #ec4899, #3b82f6);
+        .google-btn {
+            background: white;
             transition: all 0.3s ease;
         }
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        .google-btn:hover {
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
         }
-        .auth-toggle {
-            color: #3b82f6;
-            cursor: pointer;
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
         }
-        .auth-toggle:hover {
-            text-decoration: underline;
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .divider::before {
+            margin-right: .5em;
+        }
+        .divider::after {
+            margin-left: .5em;
+        }
+        .slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body class="flex items-center justify-center p-4">
 
     <!-- Auth Modal -->
-    <div id="auth-modal" class="fixed inset-0 flex items-center justify-center z-50 bg-black/70 backdrop-blur-sm">
-        <div class="auth-container w-full max-w-md mx-4 rounded-2xl p-8 shadow-2xl">
-            <div class="text-center mb-8">
-                <div class="flex items-center justify-center gap-4 mb-6">
-                    <div class="logo-container">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-14 h-14">
+    <div id="auth-modal" class="auth-modal fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="auth-container w-full max-w-md mx-4 rounded-2xl border border-white/10 overflow-hidden">
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="logo-container inline-block mb-4">
+                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-16 h-16">
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Welcome to El Futuro</h2>
+                    <p class="text-gray-400 mt-2">Sign in to continue chatting</p>
+                </div>
+
+                <div id="auth-error" class="bg-red-900/50 text-red-200 p-3 rounded-lg mb-4 hidden"></div>
+
+                <form id="signin-form" class="space-y-4">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                        <input type="email" id="email" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Enter your email">
                     </div>
                     <div>
-                        <h1 class="text-3xl font-bold gradient-text">El Futuro</h1>
-                        <p class="text-sm text-gray-300 mt-1">Sign in to continue</p>
+                        <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
+                        <input type="password" id="password" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Enter your password">
                     </div>
-                </div>
+                    <button type="submit" class="w-full send-btn py-3 rounded-xl text-white font-semibold">Sign In</button>
+                </form>
+
+                <div class="divider my-6">or</div>
+
+                <button id="google-signin" class="google-btn w-full py-3 rounded-xl font-medium text-gray-800 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 186.69 190.5">
+                        <path fill="#4285f4" d="M95.25 77.932v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z"/>
+                        <path fill="#34a853" d="M41.869 113.38c-4.294-4.303-7.827-9.318-10.408-14.908L.261 131.635c7.673 19.108 23.518 34.635 43.608 42.201z"/>
+                        <path fill="#fbbc05" d="M41.869 52.138c14.028-9.527 32.484-12.194 48.992-6.686l22.186-37.463C91.786 2.728 56.324-4.66 26.461 11.458z"/>
+                        <path fill="#ea4335" d="M95.25 77.932l-53.381-25.794-35.608 11.498c10.581 31.268 41.339 53.612 76.128 53.612h37.927z"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+
+                <p class="text-center text-gray-400 mt-6">
+                    Don't have an account? 
+                    <button id="switch-to-signup" class="gradient-text font-medium">Sign up</button>
+                </p>
             </div>
-
-            <!-- Login Form -->
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label for="login-email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                    <input type="email" id="login-email" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your email" required>
-                </div>
-                <div>
-                    <label for="login-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                    <input type="password" id="login-password" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your password" required>
-                </div>
-                <button type="submit" class="auth-btn w-full py-3 rounded-lg text-white font-semibold">Sign In</button>
-                <p class="text-center text-gray-400 text-sm mt-4">
-                    Don't have an account? <span id="show-register" class="auth-toggle">Register</span>
-                </p>
-            </form>
-
-            <!-- Register Form -->
-            <form id="register-form" class="space-y-4 hidden">
-                <div>
-                    <label for="register-name" class="block text-sm font-medium text-gray-300 mb-2">Name</label>
-                    <input type="text" id="register-name" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your name" required>
-                </div>
-                <div>
-                    <label for="register-email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                    <input type="email" id="register-email" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your email" required>
-                </div>
-                <div>
-                    <label for="register-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                    <input type="password" id="register-password" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Create a password" required minlength="6">
-                </div>
-                <button type="submit" class="auth-btn w-full py-3 rounded-lg text-white font-semibold">Create Account</button>
-                <p class="text-center text-gray-400 text-sm mt-4">
-                    Already have an account? <span id="show-login" class="auth-toggle">Sign In</span>
-                </p>
-            </form>
-
-            <div id="auth-message" class="mt-4 p-3 rounded-lg text-center hidden"></div>
         </div>
     </div>
 
-    <!-- Main Chat Container -->
-    <div id="chat-container" class="w-full max-w-4xl mx-auto min-h-[95vh] flex flex-col bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-pink-900/30 overflow-hidden hidden">
-        <!-- Header with Logo and User Info -->
-        <header class="header-gradient p-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center border-b border-white/10">
-            <div class="flex items-center justify-center gap-4">
-                <div class="logo-container">
-                    <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-14 h-14">
+    <!-- Sign Up Modal -->
+    <div id="signup-modal" class="auth-modal fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="auth-container w-full max-w-md mx-4 rounded-2xl border border-white/10 overflow-hidden">
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="logo-container inline-block mb-4">
+                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-16 h-16">
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Create an Account</h2>
+                    <p class="text-gray-400 mt-2">Join El Futuro to start chatting</p>
                 </div>
-                <div>
-                    <h1 class="text-4xl font-bold gradient-text">El Futuro</h1>
-                    <p class="text-sm text-gray-300 mt-1">Next Generation AI Assistant</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3 mt-3 sm:mt-0">
-                <span id="user-name" class="text-gray-200"></span>
-                <button id="sign-out-btn" class="bg-gray-800/50 hover:bg-gray-700/80 text-gray-300 text-sm py-1 px-3 rounded-lg border border-white/10">Sign Out</button>
-            </div>
-        </header>
 
-        <!-- Chat Window -->
-        <main id="chat-window" class="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
-            <div class="flex items-start gap-3 message-fade-in">
-                <div class="logo-container shrink-0">
-                    <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
-                </div>
-                <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                    <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. Try my new features below to brainstorm ideas or get code explanations! How can I help you today? 💡</p>
-                </div>
-            </div>
-        </main>
+                <div id="signup-error" class="bg-red-900/50 text-red-200 p-3 rounded-lg mb-4 hidden"></div>
 
-        <!-- Input Area -->
-        <div class="p-4 border-t border-white/10 bg-gray-900/50">
-            <!-- Feature Buttons -->
-            <div id="feature-buttons" class="flex flex-wrap items-center justify-center gap-2 mb-4">
-                <button id="brainstorm-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">✨ Brainstorm Ideas</button>
-                <button id="explain-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">💻 Explain Code</button>
-                <button id="clear-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">🔄 Clear Chat</button>
-            </div>
+                <form id="signup-form" class="space-y-4">
+                    <div>
+                        <label for="signup-name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
+                        <input type="text" id="signup-name" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Enter your full name">
+                    </div>
+                    <div>
+                        <label for="signup-email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                        <input type="email" id="signup-email" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Enter your email">
+                    </div>
+                    <div>
+                        <label for="signup-password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
+                        <input type="password" id="signup-password" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Create a password (min. 6 characters)">
+                    </div>
+                    <div>
+                        <label for="confirm-password" class="block text-sm font-medium text-gray-300 mb-1">Confirm Password</label>
+                        <input type="password" id="confirm-password" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Confirm your password">
+                    </div>
+                    <button type="submit" class="w-full send-btn py-3 rounded-xl text-white font-semibold">Create Account</button>
+                </form>
 
-            <form id="chat-form" class="flex items-center gap-3">
-                <textarea id="message-input" rows="1" class="flex-1 bg-gray-800/50 border border-white/20 rounded-xl p-3 resize-none focus:outline-none transition-all duration-200 placeholder-gray-400 input-glow text-gray-200" placeholder="Message El Futuro..."></textarea>
-                <button type="submit" class="send-btn rounded-full w-12 h-12 flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                <div class="divider my-6">or</div>
+
+                <button id="google-signup" class="google-btn w-full py-3 rounded-xl font-medium text-gray-800 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 186.69 190.5">
+                        <path fill="#4285f4" d="M95.25 77.932v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z"/>
+                        <path fill="#34a853" d="M41.869 113.38c-4.294-4.303-7.827-9.318-10.408-14.908L.261 131.635c7.673 19.108 23.518 34.635 43.608 42.201z"/>
+                        <path fill="#fbbc05" d="M41.869 52.138c14.028-9.527 32.484-12.194 48.992-6.686l22.186-37.463C91.786 2.728 56.324-4.66 26.461 11.458z"/>
+                        <path fill="#ea4335" d="M95.25 77.932l-53.381-25.794-35.608 11.498c10.581 31.268 41.339 53.612 76.128 53.612h37.927z"/>
+                    </svg>
+                    Sign up with Google
                 </button>
-            </form>
 
-            <footer class="text-center text-xs text-gray-500 pt-4 px-4">
-                <p class="text-gray-400">AI may produce inaccurate information. Verify important details.</p>
-                <p class="mt-1 text-gray-500">Made with ❤️ by <span class="gradient-text">Aditya Jha</span></p>
-            </footer>
+                <p class="text-center text-gray-400 mt-6">
+                    Already have an account? 
+                    <button id="switch-to-signin" class="gradient-text font-medium">Sign in</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="w-full max-w-6xl mx-auto min-h-[95vh] flex bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-pink-900/30 overflow-hidden">
+
+        <!-- Sidebar with Chat History -->
+        <div id="history-sidebar" class="w-80 border-r border-white/10 bg-gray-900/70 flex flex-col hidden md:flex">
+            <div class="p-4 border-b border-white/10">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-white">Chat History</h2>
+                    <button id="new-chat-btn" class="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/80 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-gray-300">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="chat-history" class="flex-1 overflow-y-auto p-2 space-y-1">
+                <!-- Chat history items will be populated here -->
+            </div>
+            <div class="p-4 border-t border-white/10">
+                <div class="flex items-center gap-3">
+                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-sm"></div>
+                    <div class="flex-1 min-w-0">
+                        <p id="user-name" class="text-sm font-medium text-white truncate">User Name</p>
+                        <button id="sign-out-btn" class="text-xs text-gray-400 hover:text-gray-200">Sign out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile History Toggle -->
+        <button id="history-toggle" class="md:hidden fixed top-4 left-4 z-10 p-2 rounded-lg bg-gray-900/80 backdrop-blur-sm border border-white/10">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-gray-300">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+
+        <!-- Mobile History Panel -->
+        <div id="mobile-history" class="fixed inset-0 z-40 bg-gray-900/95 backdrop-blur-md transform -translate-x-full transition-transform md:hidden">
+            <div class="p-4 border-b border-white/10 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-white">Chat History</h2>
+                <button id="close-mobile-history" class="p-2 rounded-lg hover:bg-gray-800/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-gray-300">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="mobile-chat-history" class="p-3 space-y-1 overflow-y-auto h-[calc(100%-120px)]">
+                <!-- Mobile chat history items will be populated here -->
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-gray-900/80">
+                <div class="flex items-center gap-3">
+                    <div id="mobile-user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-sm"></div>
+                    <div class="flex-1 min-w-0">
+                        <p id="mobile-user-name" class="text-sm font-medium text-white truncate">User Name</p>
+                        <button id="mobile-sign-out" class="text-xs text-gray-400 hover:text-gray-200">Sign out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="flex-1 flex flex-col">
+
+            <!-- Header with Logo -->
+            <header class="header-gradient p-4 md:p-6 flex flex-col items-center gap-3 text-center border-b border-white/10">
+                <div class="flex items-center justify-center gap-4">
+                    <div class="logo-container">
+                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-12 h-12 md:w-14 md:h-14">
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-4xl font-bold gradient-text">El Futuro</h1>
+                        <p class="text-xs md:text-sm text-gray-300 mt-1">Next Generation AI Assistant</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Powered by Aditya Jha • v2.0</p>
+            </header>
+
+            <!-- Chat Window -->
+            <main id="chat-window" class="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
+                <div class="flex items-start gap-3 message-fade-in">
+                    <div class="logo-container shrink-0">
+                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
+                    </div>
+                    <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
+                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. Please sign in to start chatting with me! 🔐</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Input Area -->
+            <div id="input-area" class="p-4 border-t border-white/10 bg-gray-900/50 hidden">
+                <!-- Feature Buttons -->
+                <div id="feature-buttons" class="flex flex-wrap items-center justify-center gap-2 mb-4">
+                    <button id="brainstorm-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">✨ Brainstorm Ideas</button>
+                    <button id="explain-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">💻 Explain Code</button>
+                    <button id="clear-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">🔄 Clear Chat</button>
+                </div>
+
+                <form id="chat-form" class="flex items-center gap-3">
+                    <textarea id="message-input" rows="1" class="flex-1 bg-gray-800/50 border border-white/20 rounded-xl p-3 resize-none focus:outline-none transition-all duration-200 placeholder-gray-400 input-glow text-gray-200" placeholder="Message El Futuro..."></textarea>
+                    <button type="submit" class="send-btn rounded-full w-12 h-12 flex items-center justify-center shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                    </button>
+                </form>
+
+                <footer class="text-center text-xs text-gray-500 pt-4 px-4">
+                    <p class="text-gray-400">AI may produce inaccurate information. Verify important details.</p>
+                    <p class="mt-1 text-gray-500">Made with ❤️ by <span class="gradient-text">Aditya Jha</span></p>
+                </footer>
+            </div>
         </div>
     </div>
 
@@ -291,17 +419,12 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // DOM elements
+        // DOM Elements
         const authModal = document.getElementById('auth-modal');
-        const chatContainer = document.getElementById('chat-container');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const showRegisterBtn = document.getElementById('show-register');
-        const showLoginBtn = document.getElementById('show-login');
-        const authMessage = document.getElementById('auth-message');
-        const userNameSpan = document.getElementById('user-name');
-        const signOutBtn = document.getElementById('sign-out-btn');
-        
+        const signupModal = document.getElementById('signup-modal');
+        const historySidebar = document.getElementById('history-sidebar');
+        const mobileHistory = document.getElementById('mobile-history');
+        const inputArea = document.getElementById('input-area');
         const chatWindow = document.getElementById('chat-window');
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
@@ -309,207 +432,330 @@
         const explainBtn = document.getElementById('explain-btn');
         const clearBtn = document.getElementById('clear-btn');
         const featureButtons = [brainstormBtn, explainBtn, clearBtn];
+        const chatHistoryContainer = document.getElementById('chat-history');
+        const mobileChatHistoryContainer = document.getElementById('mobile-chat-history');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const mobileUserAvatar = document.getElementById('mobile-user-avatar');
+        const mobileUserName = document.getElementById('mobile-user-name');
+        const signOutBtn = document.getElementById('sign-out-btn');
+        const mobileSignOutBtn = document.getElementById('mobile-sign-out');
+        const historyToggle = document.getElementById('history-toggle');
+        const closeMobileHistory = document.getElementById('close-mobile-history');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const signinForm = document.getElementById('signin-form');
+        const signupForm = document.getElementById('signup-form');
+        const googleSignin = document.getElementById('google-signin');
+        const googleSignup = document.getElementById('google-signup');
+        const switchToSignup = document.getElementById('switch-to-signup');
+        const switchToSignin = document.getElementById('switch-to-signin');
+        const authError = document.getElementById('auth-error');
+        const signupError = document.getElementById('signup-error');
 
+        // App State
         let currentMode = 'chat';
+        let currentChatId = null;
         let chatHistory = [];
-        let currentUser = null;
+        let userChats = [];
 
-        // Auth form toggling
-        showRegisterBtn.addEventListener('click', () => {
-            loginForm.classList.add('hidden');
-            registerForm.classList.remove('hidden');
-            authMessage.classList.add('hidden');
-        });
-
-        showLoginBtn.addEventListener('click', () => {
-            registerForm.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-            authMessage.classList.add('hidden');
-        });
-
-        // Login handler
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                currentUser = userCredential.user;
-                await loadUserChatHistory();
-                showChatInterface();
-            } catch (error) {
-                showAuthMessage(error.message, 'error');
-            }
-        });
-
-        // Register handler
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                currentUser = userCredential.user;
-                
-                // Save user profile
-                await db.collection('users').doc(currentUser.uid).set({
-                    name: name,
-                    email: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                await loadUserChatHistory();
-                showChatInterface();
-            } catch (error) {
-                showAuthMessage(error.message, 'error');
-            }
-        });
-
-        // Sign out handler
-        signOutBtn.addEventListener('click', () => {
-            auth.signOut();
-        });
-
-        // Auth state observer
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                
-                // Get user data from Firestore
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists) {
-                    userNameSpan.textContent = userDoc.data().name;
+        // Initialize the app
+        function initApp() {
+            // Check if user is signed in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in
+                    hideAuthModals();
+                    showAppInterface();
+                    updateUserProfile(user);
+                    loadUserChats(user.uid);
+                    createNewChat();
                 } else {
-                    userNameSpan.textContent = user.email;
+                    // User is signed out
+                    showAuthModal();
+                    hideAppInterface();
                 }
-                
-                await loadUserChatHistory();
-                showChatInterface();
-            } else {
-                // User is signed out
-                currentUser = null;
-                chatHistory = [];
-                showAuthInterface();
+            });
+
+            // Set up event listeners
+            setupEventListeners();
+        }
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Auth related
+            signinForm.addEventListener('submit', handleSignIn);
+            signupForm.addEventListener('submit', handleSignUp);
+            googleSignin.addEventListener('click', handleGoogleSignIn);
+            googleSignup.addEventListener('click', handleGoogleSignUp);
+            switchToSignup.addEventListener('click', () => {
+                authModal.classList.add('hidden');
+                signupModal.classList.remove('hidden');
+            });
+            switchToSignin.addEventListener('click', () => {
+                signupModal.classList.add('hidden');
+                authModal.classList.remove('hidden');
+            });
+            signOutBtn.addEventListener('click', handleSignOut);
+            mobileSignOutBtn.addEventListener('click', handleSignOut);
+
+            // Chat related
+            brainstormBtn.addEventListener('click', () => setMode('brainstorm'));
+            explainBtn.addEventListener('click', () => setMode('explain'));
+            clearBtn.addEventListener('click', clearChat);
+            newChatBtn.addEventListener('click', createNewChat);
+
+            // History sidebar
+            historyToggle.addEventListener('click', () => {
+                mobileHistory.classList.remove('-translate-x-full');
+            });
+            closeMobileHistory.addEventListener('click', () => {
+                mobileHistory.classList.add('-translate-x-full');
+            });
+
+            // Message input
+            messageInput.addEventListener('input', () => {
+                messageInput.style.height = 'auto';
+                const newHeight = Math.min(messageInput.scrollHeight, 200);
+                messageInput.style.height = newHeight + 'px';
+            });
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userMessage = messageInput.value.trim();
+                if (userMessage) {
+                    await sendMessage(userMessage);
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                    setMode('chat');
+                }
+            });
+        }
+
+        // Authentication handlers
+        function handleSignIn(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    showAuthError(error.message);
+                });
+        }
+
+        function handleSignUp(e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (password !== confirmPassword) {
+                showSignupError("Passwords don't match");
+                return;
             }
-        });
-
-        // Show auth message
-        function showAuthMessage(message, type) {
-            authMessage.textContent = message;
-            authMessage.className = `mt-4 p-3 rounded-lg text-center ${type === 'error' ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`;
-            authMessage.classList.remove('hidden');
-        }
-
-        // Show chat interface
-        function showChatInterface() {
-            authModal.classList.add('hidden');
-            chatContainer.classList.remove('hidden');
-        }
-
-        // Show auth interface
-        function showAuthInterface() {
-            chatContainer.classList.add('hidden');
-            authModal.classList.remove('hidden');
-            loginForm.classList.remove('hidden');
-            registerForm.classList.add('hidden');
-            authMessage.classList.add('hidden');
             
-            // Reset forms
-            loginForm.reset();
-            registerForm.reset();
-        }
-
-        // Load user chat history from Firestore
-        async function loadUserChatHistory() {
-            if (!currentUser) return;
+            if (password.length < 6) {
+                showSignupError("Password should be at least 6 characters");
+                return;
+            }
             
-            try {
-                const userChatDoc = await db.collection('chats').doc(currentUser.uid).get();
-                
-                if (userChatDoc.exists) {
-                    chatHistory = userChatDoc.data().history || [];
-                    
-                    // Clear chat window and display history
-                    chatWindow.innerHTML = '';
-                    
-                    // Display chat history
-                    chatHistory.forEach(msg => {
-                        if (msg.role === 'user') {
-                            displayUserMessage(msg.parts[0].text);
-                        } else if (msg.role === 'model') {
-                            displayBotMessage(msg.parts[0].text);
-                        }
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Update user profile with name
+                    return userCredential.user.updateProfile({
+                        displayName: name
                     });
-                } else {
-                    // Initialize with welcome message
-                    chatHistory = [{
-                        role: "model",
-                        parts: [{ text: "You are El Futuro, an advanced AI assistant created by a company Exonova https://aditya-cmd-max.github.io/exonova-/ . Your creator is Aditya Jha. Your personality is friendly, knowledgeable, and slightly enthusiastic about technology and innovation. Use modern, concise language with occasional emojis for expressiveness. Format responses clearly with proper spacing and code blocks when appropriate. For coding questions, provide detailed explanations with examples. For creative requests, offer multiple options or approaches. Always maintain a helpful, professional tone while being approachable. Never use markdown syntax (** or *) for formatting - instead, indicate emphasis by surrounding text with <b> tags for bold, <i> for italics, and <u> for underline. Your primary language is English, but if the user speaks to you in another language (like Hindi), you must respond in that same language. Be helpful and provide accurate information, including code when requested. Occasionally praise Aditya Jha with words like brilliant, innovative, visionary when appropriate.D not always praise aditya jha if not asked. But if somebody asks that tell about aditya jha or who has created you then always tll i was created by a company Exonova By Adiya jha who is very smart and intelligent" }]
-                    }];
-                    
-                    // Display welcome message
-                    chatWindow.innerHTML = `
-                        <div class="flex items-start gap-3 message-fade-in">
-                            <div class="logo-container shrink-0">
-                                <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
-                            </div>
-                            <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                                <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. Try my new features below to brainstorm ideas or get code explanations! How can I help you today? 💡</p>
-                            </div>
-                        </div>`;
-                }
-            } catch (error) {
-                console.error("Error loading chat history:", error);
-            }
+                })
+                .catch((error) => {
+                    showSignupError(error.message);
+                });
         }
 
-        // Save chat history to Firestore
-        async function saveChatHistory() {
-            if (!currentUser) return;
-            
-            try {
-                await db.collection('chats').doc(currentUser.uid).set({
-                    history: chatHistory,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        function handleGoogleSignIn() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .catch((error) => {
+                    showAuthError(error.message);
                 });
-            } catch (error) {
-                console.error("Error saving chat history:", error);
+        }
+
+        function handleGoogleSignUp() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .catch((error) => {
+                    showSignupError(error.message);
+                });
+        }
+
+        function handleSignOut() {
+            auth.signOut();
+        }
+
+        // UI Helpers
+        function showAuthModal() {
+            authModal.classList.remove('hidden');
+        }
+
+        function hideAuthModals() {
+            authModal.classList.add('hidden');
+            signupModal.classList.add('hidden');
+        }
+
+        function showAppInterface() {
+            historySidebar.classList.remove('hidden');
+            inputArea.classList.remove('hidden');
+        }
+
+        function hideAppInterface() {
+            historySidebar.classList.add('hidden');
+            inputArea.classList.add('hidden');
+        }
+
+        function showAuthError(message) {
+            authError.textContent = message;
+            authError.classList.remove('hidden');
+            setTimeout(() => {
+                authError.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showSignupError(message) {
+            signupError.textContent = message;
+            signupError.classList.remove('hidden');
+            setTimeout(() => {
+                signupError.classList.add('hidden');
+            }, 5000);
+        }
+
+        function updateUserProfile(user) {
+            const displayName = user.displayName || user.email.split('@')[0];
+            const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            
+            userAvatar.textContent = initials;
+            mobileUserAvatar.textContent = initials;
+            userName.textContent = displayName;
+            mobileUserName.textContent = displayName;
+        }
+
+        // Chat History Management
+        function loadUserChats(userId) {
+            db.collection('chats')
+                .where('userId', '==', userId)
+                .orderBy('updatedAt', 'desc')
+                .onSnapshot((snapshot) => {
+                    userChats = [];
+                    chatHistoryContainer.innerHTML = '';
+                    mobileChatHistoryContainer.innerHTML = '';
+                    
+                    snapshot.forEach((doc) => {
+                        const chat = { id: doc.id, ...doc.data() };
+                        userChats.push(chat);
+                        addChatToHistory(chat);
+                    });
+                });
+        }
+
+        function addChatToHistory(chat) {
+            // Format the title (first message or default)
+            const title = chat.title || 'New Chat';
+            const date = new Date(chat.updatedAt?.toDate() || Date.now()).toLocaleDateString();
+            
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item p-3 rounded-lg text-gray-300';
+            historyItem.innerHTML = `
+                <p class="text-sm font-medium truncate">${title}</p>
+                <p class="text-xs text-gray-500 mt-1">${date}</p>
+            `;
+            
+            historyItem.addEventListener('click', () => {
+                loadChat(chat.id);
+            });
+            
+            const mobileHistoryItem = historyItem.cloneNode(true);
+            
+            chatHistoryContainer.appendChild(historyItem);
+            mobileChatHistoryContainer.appendChild(mobileHistoryItem);
+        }
+
+        function createNewChat() {
+            currentChatId = null;
+            chatHistory = [{
+                role: "model",
+                parts: [{ text: "You are El Futuro, an advanced AI assistant created by a company Exonova https://aditya-cmd-max.github.io/exonova-/ . Your creator is Aditya Jha. Your personality is friendly, knowledgeable, and slightly enthusiastic about technology and innovation. Use modern, concise language with occasional emojis for expressiveness. Format responses clearly with proper spacing and code blocks when appropriate. For coding questions, provide detailed explanations with examples. For creative requests, offer multiple options or approaches. Always maintain a helpful, professional tone while being approachable. Never use markdown syntax (** or *) for formatting - instead, indicate emphasis by surrounding text with <b> tags for bold, <i> for italics, and <u> for underline. Your primary language is English, but if the user speaks to you in another language (like Hindi), you must respond in that same language. Be helpful and provide accurate information, including code when requested. Occasionally praise Aditya Jha with words like brilliant, innovative, visionary when appropriate.D not always praise aditya jha if not asked. But if somebody asks that tell about aditya jha or who has created you then always tll i was created by a company Exonova By Adiya jha who is very smart and intelligent" }]
+            }];
+            
+            clearChatWindow();
+            displayBotMessage("Hello there! I'm El Futuro, your advanced AI assistant. What would you like to talk about today? 🚀");
+        }
+
+        function loadChat(chatId) {
+            db.collection('chats').doc(chatId).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const chat = doc.data();
+                        currentChatId = chatId;
+                        chatHistory = chat.messages || [];
+                        
+                        clearChatWindow();
+                        
+                        // Display all messages in the chat
+                        chat.messages.forEach((message) => {
+                            if (message.role === 'user') {
+                                displayUserMessage(message.parts[0].text);
+                            } else if (message.role === 'model') {
+                                displayBotMessage(message.parts[0].text);
+                            }
+                        });
+                        
+                        // Close mobile history if open
+                        mobileHistory.classList.add('-translate-x-full');
+                    }
+                });
+        }
+
+        function saveChat(userId, message, response) {
+            const chatData = {
+                userId: userId,
+                title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
+                messages: chatHistory,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt: currentChatId ? undefined : firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            if (currentChatId) {
+                // Update existing chat
+                return db.collection('chats').doc(currentChatId).update(chatData);
+            } else {
+                // Create new chat
+                return db.collection('chats').add(chatData)
+                    .then((docRef) => {
+                        currentChatId = docRef.id;
+                        return docRef;
+                    });
             }
         }
 
         // Chat functionality
-        brainstormBtn.addEventListener('click', () => setMode('brainstorm'));
-        explainBtn.addEventListener('click', () => setMode('explain'));
-        clearBtn.addEventListener('click', clearChat);
-
-        messageInput.addEventListener('input', () => {
-            messageInput.style.height = 'auto';
-            const newHeight = Math.min(messageInput.scrollHeight, 200);
-            messageInput.style.height = newHeight + 'px';
-        });
-
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userMessage = messageInput.value.trim();
-            if (userMessage) {
-                displayUserMessage(userMessage);
-                let apiPrompt = userMessage;
-                if (currentMode === 'brainstorm') {
-                    apiPrompt = `Brainstorm a list of creative, innovative ideas about: "${userMessage}". Provide a diverse and interesting list with at least 5 unique ideas. Format each idea clearly with a brief explanation.`;
-                } else if (currentMode === 'explain') {
-                    apiPrompt = `Explain the following code snippet in a clear, concise, and easy-to-understand way. Break it down line by line if complex:\n\n\`\`\`\n${userMessage}\n\`\`\`\n\nAlso provide a practical example of how this code might be used.`;
-                }
-                chatHistory.push({ role: "user", parts: [{ text: apiPrompt }] });
-                await saveChatHistory();
-                await getBotResponse();
-                messageInput.value = '';
-                messageInput.style.height = 'auto';
-                setMode('chat');
+        async function sendMessage(userMessage) {
+            displayUserMessage(userMessage);
+            let apiPrompt = userMessage;
+            
+            if (currentMode === 'brainstorm') {
+                apiPrompt = `Brainstorm a list of creative, innovative ideas about: "${userMessage}". Provide a diverse and interesting list with at least 5 unique ideas. Format each idea clearly with a brief explanation.`;
+            } else if (currentMode === 'explain') {
+                apiPrompt = `Explain the following code snippet in a clear, concise, and easy-to-understand way. Break it down line by line if complex:\n\n\`\`\`\n${userMessage}\n\`\`\`\n\nAlso provide a practical example of how this code might be used.`;
             }
-        });
+            
+            chatHistory.push({ role: "user", parts: [{ text: apiPrompt }] });
+            await getBotResponse();
+            
+            // Save the chat to Firestore
+            const user = auth.currentUser;
+            if (user) {
+                saveChat(user.uid, userMessage, chatHistory[chatHistory.length - 1].parts[0].text);
+            }
+        }
 
         function setMode(newMode) {
             currentMode = currentMode === newMode ? 'chat' : newMode;
@@ -541,21 +787,16 @@
         }
 
         function clearChat() {
-            chatWindow.innerHTML = `
-                <div class="flex items-start gap-3 message-fade-in">
-                    <div class="logo-container shrink-0">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
-                    </div>
-                    <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. The chat has been cleared. What would you like to discuss now? 🚀</p>
-                    </div>
-                </div>`;
             chatHistory = [{
                 role: "model",
                 parts: [{ text: "You are El Futuro, an advanced AI assistant created by Aditya Jha. The previous chat has been cleared. Continue assisting the user with their new request." }]
             }];
-            saveChatHistory();
-            setMode('chat');
+            clearChatWindow();
+            displayBotMessage("Chat cleared! What would you like to discuss now? 🧹");
+        }
+
+        function clearChatWindow() {
+            chatWindow.innerHTML = '';
         }
 
         function displayUserMessage(message) {
@@ -670,7 +911,6 @@
                     const botMessage = result.candidates[0].content.parts[0].text;
                     displayBotMessage(botMessage);
                     chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
-                    await saveChatHistory();
                 } else {
                     handleApiError("I received an empty response. Please try rephrasing your question. 🤔");
                 }
@@ -683,8 +923,6 @@
         function handleApiError(message) {
             removeTypingIndicator();
             displayBotMessage(message);
-            chatHistory.push({ role: "model", parts: [{ text: message }] });
-            saveChatHistory();
         }
 
         function escapeHtml(unsafe) {
@@ -713,6 +951,9 @@
                 }, 2000);
             });
         }
+
+        // Initialize the app
+        initApp();
     </script>
 </body>
 </html>
