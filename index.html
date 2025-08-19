@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Futuro AI | Next-Gen Chat Assistant by Aditya Jha</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase App (core) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logo.png">
+    
+    <!-- Firebase App (core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <!-- Firebase Auth -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <!-- Firebase Firestore -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="logo.png">
     
     <style>
         body {
@@ -131,218 +132,310 @@
             0%, 80%, 100% { transform: translateY(0); }
             40% { transform: translateY(-6px); }
         }
-        .history-item {
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border-left: 3px solid transparent;
-        }
-        .history-item:hover {
-            background: rgba(59, 130, 246, 0.1);
-            border-left-color: rgba(59, 130, 246, 0.5);
-        }
-        .history-item.active {
-            background: rgba(59, 130, 246, 0.15);
-            border-left-color: #3b82f6;
-        }
-        .auth-modal {
-            backdrop-filter: blur(5px);
-            background: rgba(0, 0, 0, 0.7);
-        }
         .auth-container {
-            background: linear-gradient(135deg, rgba(15,12,41,0.95), rgba(36,36,62,0.95));
-            box-shadow: 0 0 40px rgba(236, 72, 153, 0.3);
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .google-btn {
-            background: white;
+        .auth-input {
+            background: rgba(31, 41, 55, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .auth-input:focus {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        .auth-btn {
+            background: linear-gradient(45deg, #ec4899, #3b82f6);
             transition: all 0.3s ease;
         }
-        .google-btn:hover {
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
         }
-        .divider {
+        .auth-toggle {
+            color: #3b82f6;
+            cursor: pointer;
+        }
+        .auth-toggle:hover {
+            text-decoration: underline;
+        }
+        .provider-btn {
             display: flex;
             align-items: center;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.5);
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(31, 41, 55, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        .provider-btn:hover {
+            background: rgba(55, 65, 81, 0.7);
+            transform: translateY(-2px);
         }
-        .divider::before {
-            margin-right: .5em;
+        .chat-history {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .divider::after {
-            margin-left: .5em;
+        .history-item {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .slide-in {
-            animation: slideIn 0.3s ease-out forwards;
+        .history-item:hover {
+            background: rgba(55, 65, 81, 0.5);
         }
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        .history-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        .new-chat-btn {
+            background: linear-gradient(45deg, #ec4899, #3b82f6);
+            transition: all 0.3s ease;
+        }
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        }
+        .remember-check {
+            accent-color: #3b82f6;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                left: -100%;
+                z-index: 40;
+                transition: left 0.3s ease;
+                width: 80%;
+                height: 100%;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 30;
+            }
+            .overlay.open {
+                display: block;
+            }
         }
     </style>
 </head>
 <body class="flex items-center justify-center p-4">
 
     <!-- Auth Modal -->
-    <div id="auth-modal" class="auth-modal fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="auth-container w-full max-w-md mx-4 rounded-2xl border border-white/10 overflow-hidden">
-            <div class="p-6">
-                <div class="text-center mb-6">
-                    <div class="logo-container inline-block mb-4">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-16 h-16">
+    <div id="auth-modal" class="fixed inset-0 flex items-center justify-center z-50 bg-black/70 backdrop-blur-sm">
+        <div class="auth-container w-full max-w-md mx-4 rounded-2xl p-8 shadow-2xl">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center gap-4 mb-6">
+                    <div class="logo-container">
+                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-14 h-14">
                     </div>
-                    <h2 class="text-2xl font-bold text-white">Welcome to El Futuro</h2>
-                    <p class="text-gray-400 mt-2">Sign in to continue chatting</p>
+                    <div>
+                        <h1 class="text-3xl font-bold gradient-text">El Futuro</h1>
+                        <p class="text-sm text-gray-300 mt-1">Sign in to continue</p>
+                    </div>
                 </div>
-
-                <div id="auth-error" class="bg-red-900/50 text-red-200 p-3 rounded-lg mb-4 hidden"></div>
-
-                <form id="signin-form" class="space-y-4">
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
-                        <input type="email" id="email" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Enter your email">
-                    </div>
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
-                        <input type="password" id="password" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Enter your password">
-                    </div>
-                    <button type="submit" class="w-full send-btn py-3 rounded-xl text-white font-semibold">Sign In</button>
-                </form>
-
-                <div class="divider my-6">or</div>
-
-                <button id="google-signin" class="google-btn w-full py-3 rounded-xl font-medium text-gray-800 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 186.69 190.5">
-                        <path fill="#4285f4" d="M95.25 77.932v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z"/>
-                        <path fill="#34a853" d="M41.869 113.38c-4.294-4.303-7.827-9.318-10.408-14.908L.261 131.635c7.673 19.108 23.518 34.635 43.608 42.201z"/>
-                        <path fill="#fbbc05" d="M41.869 52.138c14.028-9.527 32.484-12.194 48.992-6.686l22.186-37.463C91.786 2.728 56.324-4.66 26.461 11.458z"/>
-                        <path fill="#ea4335" d="M95.25 77.932l-53.381-25.794-35.608 11.498c10.581 31.268 41.339 53.612 76.128 53.612h37.927z"/>
-                    </svg>
-                    Sign in with Google
-                </button>
-
-                <p class="text-center text-gray-400 mt-6">
-                    Don't have an account? 
-                    <button id="switch-to-signup" class="gradient-text font-medium">Sign up</button>
-                </p>
             </div>
-        </div>
-    </div>
 
-    <!-- Sign Up Modal -->
-    <div id="signup-modal" class="auth-modal fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="auth-container w-full max-w-md mx-4 rounded-2xl border border-white/10 overflow-hidden">
-            <div class="p-6">
-                <div class="text-center mb-6">
-                    <div class="logo-container inline-block mb-4">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-16 h-16">
-                    </div>
-                    <h2 class="text-2xl font-bold text-white">Create an Account</h2>
-                    <p class="text-gray-400 mt-2">Join El Futuro to start chatting</p>
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                    <input type="email" id="login-email" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your email" required>
                 </div>
-
-                <div id="signup-error" class="bg-red-900/50 text-red-200 p-3 rounded-lg mb-4 hidden"></div>
-
-                <form id="signup-form" class="space-y-4">
-                    <div>
-                        <label for="signup-name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
-                        <input type="text" id="signup-name" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Enter your full name">
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                    <input type="password" id="login-password" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your password" required>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember-me" class="remember-check h-4 w-4 rounded">
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-300">Remember me</label>
+                </div>
+                <button type="submit" class="auth-btn w-full py-3 rounded-lg text-white font-semibold">Sign In</button>
+                
+                <div class="relative my-4">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-600"></div>
                     </div>
-                    <div>
-                        <label for="signup-email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
-                        <input type="email" id="signup-email" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Enter your email">
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-gray-900 text-gray-400">Or continue with</span>
                     </div>
-                    <div>
-                        <label for="signup-password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
-                        <input type="password" id="signup-password" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Create a password (min. 6 characters)">
-                    </div>
-                    <div>
-                        <label for="confirm-password" class="block text-sm font-medium text-gray-300 mb-1">Confirm Password</label>
-                        <input type="password" id="confirm-password" required class="w-full bg-gray-800/50 border border-white/20 rounded-xl p-3 focus:outline-none input-glow text-gray-200 placeholder-gray-400" placeholder="Confirm your password">
-                    </div>
-                    <button type="submit" class="w-full send-btn py-3 rounded-xl text-white font-semibold">Create Account</button>
-                </form>
-
-                <div class="divider my-6">or</div>
-
-                <button id="google-signup" class="google-btn w-full py-3 rounded-xl font-medium text-gray-800 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 186.69 190.5">
-                        <path fill="#4285f4" d="M95.25 77.932v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z"/>
-                        <path fill="#34a853" d="M41.869 113.38c-4.294-4.303-7.827-9.318-10.408-14.908L.261 131.635c7.673 19.108 23.518 34.635 43.608 42.201z"/>
-                        <path fill="#fbbc05" d="M41.869 52.138c14.028-9.527 32.484-12.194 48.992-6.686l22.186-37.463C91.786 2.728 56.324-4.66 26.461 11.458z"/>
-                        <path fill="#ea4335" d="M95.25 77.932l-53.381-25.794-35.608 11.498c10.581 31.268 41.339 53.612 76.128 53.612h37.927z"/>
-                    </svg>
-                    Sign up with Google
-                </button>
-
-                <p class="text-center text-gray-400 mt-6">
-                    Already have an account? 
-                    <button id="switch-to-signin" class="gradient-text font-medium">Sign in</button>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main App Container -->
-    <div class="w-full max-w-6xl mx-auto min-h-[95vh] flex bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-pink-900/30 overflow-hidden">
-
-        <!-- Sidebar with Chat History -->
-        <div id="history-sidebar" class="w-80 border-r border-white/10 bg-gray-900/70 flex flex-col hidden md:flex">
-            <div class="p-4 border-b border-white/10">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-white">Chat History</h2>
-                    <button id="new-chat-btn" class="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/80 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-gray-300">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" id="google-signin" class="provider-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#34A853" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
+                        Google
+                    </button>
+                    <button type="button" id="microsoft-signin" class="provider-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#f25022" d="M0 0h11.5v11.5H0zM12.5 0H24v11.5H12.5zM0 12.5h11.5V24H0zM12.5 12.5H24V24H12.5z"/>
+                        </svg>
+                        Microsoft
+                    </button>
+                </div>
+                
+                <p class="text-center text-gray-400 text-sm mt-4">
+                    Don't have an account? <span id="show-register" class="auth-toggle">Register</span>
+                </p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="space-y-4 hidden">
+                <div>
+                    <label for="register-name" class="block text-sm font-medium text-gray-300 mb-2">Name</label>
+                    <input type="text" id="register-name" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your name" required>
+                </div>
+                <div>
+                    <label for="register-email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                    <input type="email" id="register-email" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your email" required>
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                    <input type="password" id="register-password" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Create a password" required minlength="6">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember-me-register" class="remember-check h-4 w-4 rounded">
+                    <label for="remember-me-register" class="ml-2 block text-sm text-gray-300">Remember me</label>
+                </div>
+                <button type="submit" class="auth-btn w-full py-3 rounded-lg text-white font-semibold">Create Account</button>
+                
+                <div class="relative my-4">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-600"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-gray-900 text-gray-400">Or continue with</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" id="google-signup" class="provider-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#34A853" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google
+                    </button>
+                    <button type="button" id="microsoft-signup" class="provider-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#f25022" d="M0 0h11.5v11.5H0zM12.5 0H24v11.5H12.5zM0 12.5h11.5V24H0zM12.5 12.5H24V24H12.5z"/>
+                        </svg>
+                        Microsoft
+                    </button>
+                </div>
+                
+                <p class="text-center text-gray-400 text-sm mt-4">
+                    Already have an account? <span id="show-login" class="auth-toggle">Sign In</span>
+                </p>
+            </form>
+
+            <div id="auth-message" class="mt-4 p-3 rounded-lg text-center hidden"></div>
+        </div>
+    </div>
+
+    <!-- Main Chat Container -->
+    <div id="chat-container" class="w-full max-w-7xl mx-auto min-h-[95vh] flex bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-pink-900/30 overflow-hidden hidden">
+        <!-- Sidebar with Chat History -->
+        <div class="chat-history w-80 hidden md:block p-4 overflow-y-auto">
+            <div class="flex flex-col h-full">
+                <button id="new-chat-btn" class="new-chat-btn w-full py-3 rounded-lg text-white font-semibold mb-6 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    New Chat
+                </button>
+                
+                <div class="flex-1 overflow-y-auto">
+                    <h3 class="text-gray-400 text-sm font-medium mb-3 px-2">Today</h3>
+                    <div id="chat-history-list" class="space-y-2">
+                        <!-- Chat history items will be added here dynamically -->
+                    </div>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-700 mt-4">
+                    <div class="flex items-center gap-3 p-2">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-xs">
+                            <span id="user-initial">U</span>
+                        </div>
+                        <span id="sidebar-user-name" class="text-gray-200 text-sm truncate"></span>
+                    </div>
+                    <button id="sidebar-sign-out" class="w-full mt-2 text-left p-2 text-sm text-gray-400 hover:text-gray-200 rounded-lg transition-colors">
+                        Sign out
                     </button>
                 </div>
             </div>
-            <div id="chat-history" class="flex-1 overflow-y-auto p-2 space-y-1">
-                <!-- Chat history items will be populated here -->
-            </div>
-            <div class="p-4 border-t border-white/10">
-                <div class="flex items-center gap-3">
-                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-sm"></div>
-                    <div class="flex-1 min-w-0">
-                        <p id="user-name" class="text-sm font-medium text-white truncate">User Name</p>
-                        <button id="sign-out-btn" class="text-xs text-gray-400 hover:text-gray-200">Sign out</button>
-                    </div>
-                </div>
-            </div>
         </div>
-
-        <!-- Mobile History Toggle -->
-        <button id="history-toggle" class="md:hidden fixed top-4 left-4 z-10 p-2 rounded-lg bg-gray-900/80 backdrop-blur-sm border border-white/10">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-gray-300">
+        
+        <!-- Mobile sidebar toggle -->
+        <div id="mobile-sidebar-toggle" class="md:hidden absolute top-4 left-4 z-10 p-2 rounded-lg bg-gray-800/80">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-        </button>
-
-        <!-- Mobile History Panel -->
-        <div id="mobile-history" class="fixed inset-0 z-40 bg-gray-900/95 backdrop-blur-md transform -translate-x-full transition-transform md:hidden">
-            <div class="p-4 border-b border-white/10 flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-white">Chat History</h2>
-                <button id="close-mobile-history" class="p-2 rounded-lg hover:bg-gray-800/50">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-gray-300">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div id="mobile-chat-history" class="p-3 space-y-1 overflow-y-auto h-[calc(100%-120px)]">
-                <!-- Mobile chat history items will be populated here -->
-            </div>
-            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-gray-900/80">
-                <div class="flex items-center gap-3">
-                    <div id="mobile-user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-sm"></div>
-                    <div class="flex-1 min-w-0">
-                        <p id="mobile-user-name" class="text-sm font-medium text-white truncate">User Name</p>
-                        <button id="mobile-sign-out" class="text-xs text-gray-400 hover:text-gray-200">Sign out</button>
+        </div>
+        
+        <!-- Mobile sidebar overlay -->
+        <div id="mobile-overlay" class="overlay"></div>
+        
+        <!-- Mobile sidebar -->
+        <div id="mobile-sidebar" class="sidebar md:hidden">
+            <div class="chat-history w-full h-full p-4 overflow-y-auto">
+                <div class="flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <button id="new-chat-mobile" class="new-chat-btn py-2 px-4 rounded-lg text-white font-semibold flex items-center gap-2 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            New Chat
+                        </button>
+                        <button id="close-sidebar" class="p-2 rounded-lg bg-gray-800/80 text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        <h3 class="text-gray-400 text-sm font-medium mb-3 px-2">Today</h3>
+                        <div id="mobile-chat-history-list" class="space-y-2">
+                            <!-- Chat history items will be added here dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-gray-700 mt-4">
+                        <div class="flex items-center gap-3 p-2">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-xs">
+                                <span id="mobile-user-initial">U</span>
+                            </div>
+                            <span id="mobile-user-name" class="text-gray-200 text-sm truncate"></span>
+                        </div>
+                        <button id="mobile-sign-out" class="w-full mt-2 text-left p-2 text-sm text-gray-400 hover:text-gray-200 rounded-lg transition-colors">
+                            Sign out
+                        </button>
                     </div>
                 </div>
             </div>
@@ -350,19 +443,21 @@
 
         <!-- Main Chat Area -->
         <div class="flex-1 flex flex-col">
-
-            <!-- Header with Logo -->
-            <header class="header-gradient p-4 md:p-6 flex flex-col items-center gap-3 text-center border-b border-white/10">
+            <!-- Header with Logo and User Info -->
+            <header class="header-gradient p-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center border-b border-white/10">
                 <div class="flex items-center justify-center gap-4">
                     <div class="logo-container">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-12 h-12 md:w-14 md:h-14">
+                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-14 h-14">
                     </div>
                     <div>
-                        <h1 class="text-2xl md:text-4xl font-bold gradient-text">El Futuro</h1>
-                        <p class="text-xs md:text-sm text-gray-300 mt-1">Next Generation AI Assistant</p>
+                        <h1 class="text-4xl font-bold gradient-text">El Futuro</h1>
+                        <p class="text-sm text-gray-300 mt-1">Next Generation AI Assistant</p>
                     </div>
                 </div>
-                <p class="text-xs text-gray-400 mt-2">Powered by Aditya Jha • v2.0</p>
+                <div class="flex items-center gap-3 mt-3 sm:mt-0">
+                    <span id="user-name" class="text-gray-200"></span>
+                    <button id="sign-out-btn" class="bg-gray-800/50 hover:bg-gray-700/80 text-gray-300 text-sm py-1 px-3 rounded-lg border border-white/10">Sign Out</button>
+                </div>
             </header>
 
             <!-- Chat Window -->
@@ -372,13 +467,13 @@
                         <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
                     </div>
                     <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. Please sign in to start chatting with me! 🔐</p>
+                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. Try my new features below to brainstorm ideas or get code explanations! How can I help you today? 💡</p>
                     </div>
                 </div>
             </main>
 
             <!-- Input Area -->
-            <div id="input-area" class="p-4 border-t border-white/10 bg-gray-900/50 hidden">
+            <div class="p-4 border-t border-white/10 bg-gray-900/50">
                 <!-- Feature Buttons -->
                 <div id="feature-buttons" class="flex flex-wrap items-center justify-center gap-2 mb-4">
                     <button id="brainstorm-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">✨ Brainstorm Ideas</button>
@@ -419,12 +514,37 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // DOM Elements
+        // DOM elements
         const authModal = document.getElementById('auth-modal');
-        const signupModal = document.getElementById('signup-modal');
-        const historySidebar = document.getElementById('history-sidebar');
-        const mobileHistory = document.getElementById('mobile-history');
-        const inputArea = document.getElementById('input-area');
+        const chatContainer = document.getElementById('chat-container');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const showRegisterBtn = document.getElementById('show-register');
+        const showLoginBtn = document.getElementById('show-login');
+        const authMessage = document.getElementById('auth-message');
+        const userNameSpan = document.getElementById('user-name');
+        const signOutBtn = document.getElementById('sign-out-btn');
+        const googleSignInBtn = document.getElementById('google-signin');
+        const microsoftSignInBtn = document.getElementById('microsoft-signin');
+        const googleSignUpBtn = document.getElementById('google-signup');
+        const microsoftSignUpBtn = document.getElementById('microsoft-signup');
+        const rememberMeCheckbox = document.getElementById('remember-me');
+        const rememberMeRegisterCheckbox = document.getElementById('remember-me-register');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const newChatMobileBtn = document.getElementById('new-chat-mobile');
+        const chatHistoryList = document.getElementById('chat-history-list');
+        const mobileChatHistoryList = document.getElementById('mobile-chat-history-list');
+        const userInitial = document.getElementById('user-initial');
+        const mobileUserInitial = document.getElementById('mobile-user-initial');
+        const sidebarUserName = document.getElementById('sidebar-user-name');
+        const mobileUserName = document.getElementById('mobile-user-name');
+        const sidebarSignOutBtn = document.getElementById('sidebar-sign-out');
+        const mobileSignOutBtn = document.getElementById('mobile-sign-out');
+        const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        
         const chatWindow = document.getElementById('chat-window');
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
@@ -432,330 +552,443 @@
         const explainBtn = document.getElementById('explain-btn');
         const clearBtn = document.getElementById('clear-btn');
         const featureButtons = [brainstormBtn, explainBtn, clearBtn];
-        const chatHistoryContainer = document.getElementById('chat-history');
-        const mobileChatHistoryContainer = document.getElementById('mobile-chat-history');
-        const userAvatar = document.getElementById('user-avatar');
-        const userName = document.getElementById('user-name');
-        const mobileUserAvatar = document.getElementById('mobile-user-avatar');
-        const mobileUserName = document.getElementById('mobile-user-name');
-        const signOutBtn = document.getElementById('sign-out-btn');
-        const mobileSignOutBtn = document.getElementById('mobile-sign-out');
-        const historyToggle = document.getElementById('history-toggle');
-        const closeMobileHistory = document.getElementById('close-mobile-history');
-        const newChatBtn = document.getElementById('new-chat-btn');
-        const signinForm = document.getElementById('signin-form');
-        const signupForm = document.getElementById('signup-form');
-        const googleSignin = document.getElementById('google-signin');
-        const googleSignup = document.getElementById('google-signup');
-        const switchToSignup = document.getElementById('switch-to-signup');
-        const switchToSignin = document.getElementById('switch-to-signin');
-        const authError = document.getElementById('auth-error');
-        const signupError = document.getElementById('signup-error');
 
-        // App State
         let currentMode = 'chat';
-        let currentChatId = null;
         let chatHistory = [];
+        let currentUser = null;
+        let currentChatId = null;
         let userChats = [];
 
-        // Initialize the app
-        function initApp() {
-            // Check if user is signed in
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // User is signed in
-                    hideAuthModals();
-                    showAppInterface();
-                    updateUserProfile(user);
-                    loadUserChats(user.uid);
-                    createNewChat();
-                } else {
-                    // User is signed out
-                    showAuthModal();
-                    hideAppInterface();
-                }
-            });
+        // Set up mobile sidebar toggle
+        mobileSidebarToggle.addEventListener('click', () => {
+            mobileSidebar.classList.add('open');
+            mobileOverlay.classList.add('open');
+        });
 
-            // Set up event listeners
-            setupEventListeners();
+        closeSidebarBtn.addEventListener('click', closeMobileSidebar);
+        mobileOverlay.addEventListener('click', closeMobileSidebar);
+
+        function closeMobileSidebar() {
+            mobileSidebar.classList.remove('open');
+            mobileOverlay.classList.remove('open');
         }
 
-        // Set up all event listeners
-        function setupEventListeners() {
-            // Auth related
-            signinForm.addEventListener('submit', handleSignIn);
-            signupForm.addEventListener('submit', handleSignUp);
-            googleSignin.addEventListener('click', handleGoogleSignIn);
-            googleSignup.addEventListener('click', handleGoogleSignUp);
-            switchToSignup.addEventListener('click', () => {
-                authModal.classList.add('hidden');
-                signupModal.classList.remove('hidden');
-            });
-            switchToSignin.addEventListener('click', () => {
-                signupModal.classList.add('hidden');
-                authModal.classList.remove('hidden');
-            });
-            signOutBtn.addEventListener('click', handleSignOut);
-            mobileSignOutBtn.addEventListener('click', handleSignOut);
+        // Auth form toggling
+        showRegisterBtn.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            authMessage.classList.add('hidden');
+        });
 
-            // Chat related
-            brainstormBtn.addEventListener('click', () => setMode('brainstorm'));
-            explainBtn.addEventListener('click', () => setMode('explain'));
-            clearBtn.addEventListener('click', clearChat);
-            newChatBtn.addEventListener('click', createNewChat);
+        showLoginBtn.addEventListener('click', () => {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            authMessage.classList.add('hidden');
+        });
 
-            // History sidebar
-            historyToggle.addEventListener('click', () => {
-                mobileHistory.classList.remove('-translate-x-full');
-            });
-            closeMobileHistory.addEventListener('click', () => {
-                mobileHistory.classList.add('-translate-x-full');
-            });
+        // Set up provider buttons
+        googleSignInBtn.addEventListener('click', () => signInWithProvider('google'));
+        microsoftSignInBtn.addEventListener('click', () => signInWithProvider('microsoft'));
+        googleSignUpBtn.addEventListener('click', () => signInWithProvider('google'));
+        microsoftSignUpBtn.addEventListener('click', () => signInWithProvider('microsoft'));
 
-            // Message input
-            messageInput.addEventListener('input', () => {
-                messageInput.style.height = 'auto';
-                const newHeight = Math.min(messageInput.scrollHeight, 200);
-                messageInput.style.height = newHeight + 'px';
-            });
-
-            chatForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const userMessage = messageInput.value.trim();
-                if (userMessage) {
-                    await sendMessage(userMessage);
-                    messageInput.value = '';
-                    messageInput.style.height = 'auto';
-                    setMode('chat');
-                }
-            });
-        }
-
-        // Authentication handlers
-        function handleSignIn(e) {
+        // Login handler
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const rememberMe = rememberMeCheckbox.checked;
             
-            auth.signInWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    showAuthError(error.message);
-                });
-        }
+            // Set persistence based on remember me selection
+            const persistence = rememberMe ? 
+                firebase.auth.Auth.Persistence.LOCAL : 
+                firebase.auth.Auth.Persistence.SESSION;
+            
+            try {
+                await auth.setPersistence(persistence);
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                await loadUserChats();
+                showChatInterface();
+            } catch (error) {
+                showAuthMessage(error.message, 'error');
+            }
+        });
 
-        function handleSignUp(e) {
+        // Register handler
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const rememberMe = rememberMeRegisterCheckbox.checked;
             
-            if (password !== confirmPassword) {
-                showSignupError("Passwords don't match");
-                return;
+            // Set persistence based on remember me selection
+            const persistence = rememberMe ? 
+                firebase.auth.Auth.Persistence.LOCAL : 
+                firebase.auth.Auth.Persistence.SESSION;
+            
+            try {
+                await auth.setPersistence(persistence);
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                
+                // Save user profile
+                await db.collection('users').doc(currentUser.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                await loadUserChats();
+                showChatInterface();
+            } catch (error) {
+                showAuthMessage(error.message, 'error');
             }
-            
-            if (password.length < 6) {
-                showSignupError("Password should be at least 6 characters");
-                return;
-            }
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Update user profile with name
-                    return userCredential.user.updateProfile({
-                        displayName: name
-                    });
-                })
-                .catch((error) => {
-                    showSignupError(error.message);
-                });
-        }
+        });
 
-        function handleGoogleSignIn() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .catch((error) => {
-                    showAuthError(error.message);
-                });
-        }
-
-        function handleGoogleSignUp() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .catch((error) => {
-                    showSignupError(error.message);
-                });
-        }
-
-        function handleSignOut() {
+        // Sign out handler
+        signOutBtn.addEventListener('click', () => {
             auth.signOut();
-        }
+        });
+        
+        sidebarSignOutBtn.addEventListener('click', () => {
+            auth.signOut();
+        });
+        
+        mobileSignOutBtn.addEventListener('click', () => {
+            auth.signOut();
+        });
 
-        // UI Helpers
-        function showAuthModal() {
-            authModal.classList.remove('hidden');
-        }
+        // New chat handler
+        newChatBtn.addEventListener('click', startNewChat);
+        newChatMobileBtn.addEventListener('click', () => {
+            startNewChat();
+            closeMobileSidebar();
+        });
 
-        function hideAuthModals() {
-            authModal.classList.add('hidden');
-            signupModal.classList.add('hidden');
-        }
-
-        function showAppInterface() {
-            historySidebar.classList.remove('hidden');
-            inputArea.classList.remove('hidden');
-        }
-
-        function hideAppInterface() {
-            historySidebar.classList.add('hidden');
-            inputArea.classList.add('hidden');
-        }
-
-        function showAuthError(message) {
-            authError.textContent = message;
-            authError.classList.remove('hidden');
-            setTimeout(() => {
-                authError.classList.add('hidden');
-            }, 5000);
-        }
-
-        function showSignupError(message) {
-            signupError.textContent = message;
-            signupError.classList.remove('hidden');
-            setTimeout(() => {
-                signupError.classList.add('hidden');
-            }, 5000);
-        }
-
-        function updateUserProfile(user) {
-            const displayName = user.displayName || user.email.split('@')[0];
-            const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        // Provider sign-in function
+        async function signInWithProvider(providerType) {
+            let provider;
             
-            userAvatar.textContent = initials;
-            mobileUserAvatar.textContent = initials;
-            userName.textContent = displayName;
-            mobileUserName.textContent = displayName;
+            if (providerType === 'google') {
+                provider = new firebase.auth.GoogleAuthProvider();
+            } else if (providerType === 'microsoft') {
+                provider = new firebase.auth.OAuthProvider('microsoft.com');
+                provider.setCustomParameters({
+                    tenant: 'common'
+                });
+            }
+            
+            // Check if we're on the register or login form for remember me
+            const isRegisterForm = !registerForm.classList.contains('hidden');
+            const rememberMe = isRegisterForm ? 
+                rememberMeRegisterCheckbox.checked : 
+                rememberMeCheckbox.checked;
+            
+            // Set persistence based on remember me selection
+            const persistence = rememberMe ? 
+                firebase.auth.Auth.Persistence.LOCAL : 
+                firebase.auth.Auth.Persistence.SESSION;
+            
+            try {
+                await auth.setPersistence(persistence);
+                const result = await auth.signInWithPopup(provider);
+                currentUser = result.user;
+                
+                // Check if user exists in Firestore, if not create them
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (!userDoc.exists) {
+                    await db.collection('users').doc(currentUser.uid).set({
+                        name: currentUser.displayName || currentUser.email,
+                        email: currentUser.email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                
+                await loadUserChats();
+                showChatInterface();
+            } catch (error) {
+                showAuthMessage(error.message, 'error');
+            }
         }
 
-        // Chat History Management
-        function loadUserChats(userId) {
-            db.collection('chats')
-                .where('userId', '==', userId)
-                .orderBy('updatedAt', 'desc')
-                .onSnapshot((snapshot) => {
-                    userChats = [];
-                    chatHistoryContainer.innerHTML = '';
-                    mobileChatHistoryContainer.innerHTML = '';
-                    
-                    snapshot.forEach((doc) => {
-                        const chat = { id: doc.id, ...doc.data() };
-                        userChats.push(chat);
-                        addChatToHistory(chat);
+        // Auth state observer
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                
+                // Get user data from Firestore
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    userNameSpan.textContent = userData.name;
+                    sidebarUserName.textContent = userData.name;
+                    mobileUserName.textContent = userData.name;
+                    userInitial.textContent = userData.name.charAt(0).toUpperCase();
+                    mobileUserInitial.textContent = userData.name.charAt(0).toUpperCase();
+                } else {
+                    userNameSpan.textContent = user.email;
+                    sidebarUserName.textContent = user.email;
+                    mobileUserName.textContent = user.email;
+                    userInitial.textContent = user.email.charAt(0).toUpperCase();
+                    mobileUserInitial.textContent = user.email.charAt(0).toUpperCase();
+                }
+                
+                await loadUserChats();
+                showChatInterface();
+            } else {
+                // User is signed out
+                currentUser = null;
+                chatHistory = [];
+                userChats = [];
+                showAuthInterface();
+            }
+        });
+
+        // Show auth message
+        function showAuthMessage(message, type) {
+            authMessage.textContent = message;
+            authMessage.className = `mt-4 p-3 rounded-lg text-center ${type === 'error' ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`;
+            authMessage.classList.remove('hidden');
+        }
+
+        // Show chat interface
+        function showChatInterface() {
+            authModal.classList.add('hidden');
+            chatContainer.classList.remove('hidden');
+        }
+
+        // Show auth interface
+        function showAuthInterface() {
+            chatContainer.classList.add('hidden');
+            authModal.classList.remove('hidden');
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            authMessage.classList.add('hidden');
+            
+            // Reset forms
+            loginForm.reset();
+            registerForm.reset();
+        }
+
+        // Load user chats from Firestore
+        async function loadUserChats() {
+            if (!currentUser) return;
+            
+            try {
+                const chatsSnapshot = await db.collection('chats')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('updatedAt', 'desc')
+                    .get();
+                
+                userChats = [];
+                chatsSnapshot.forEach(doc => {
+                    userChats.push({
+                        id: doc.id,
+                        ...doc.data()
                     });
                 });
+                
+                renderChatHistory();
+                
+                // If we have chats, load the most recent one
+                if (userChats.length > 0) {
+                    await loadChat(userChats[0].id);
+                } else {
+                    // Create a new chat if none exist
+                    await startNewChat();
+                }
+            } catch (error) {
+                console.error("Error loading user chats:", error);
+            }
         }
 
-        function addChatToHistory(chat) {
-            // Format the title (first message or default)
-            const title = chat.title || 'New Chat';
-            const date = new Date(chat.updatedAt?.toDate() || Date.now()).toLocaleDateString();
+        // Render chat history in the sidebar
+        function renderChatHistory() {
+            // Clear existing history
+            chatHistoryList.innerHTML = '';
+            mobileChatHistoryList.innerHTML = '';
             
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item p-3 rounded-lg text-gray-300';
-            historyItem.innerHTML = `
-                <p class="text-sm font-medium truncate">${title}</p>
-                <p class="text-xs text-gray-500 mt-1">${date}</p>
-            `;
+            if (userChats.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'text-gray-500 text-sm text-center py-4';
+                emptyMessage.textContent = 'No chat history';
+                chatHistoryList.appendChild(emptyMessage.cloneNode(true));
+                mobileChatHistoryList.appendChild(emptyMessage);
+                return;
+            }
             
-            historyItem.addEventListener('click', () => {
-                loadChat(chat.id);
+            userChats.forEach(chat => {
+                const historyItem = document.createElement('div');
+                historyItem.className = `history-item ${chat.id === currentChatId ? 'active' : ''}`;
+                historyItem.dataset.chatId = chat.id;
+                
+                // Create a preview of the chat (first user message or default text)
+                let previewText = 'New chat';
+                if (chat.history && chat.history.length > 1) {
+                    const firstUserMessage = chat.history.find(msg => msg.role === 'user');
+                    if (firstUserMessage) {
+                        previewText = firstUserMessage.parts[0].text;
+                        if (previewText.length > 35) {
+                            previewText = previewText.substring(0, 35) + '...';
+                        }
+                    }
+                }
+                
+                historyItem.innerHTML = `
+                    <div class="text-gray-200 text-sm mb-1">${previewText}</div>
+                    <div class="text-gray-500 text-xs">${formatDate(chat.updatedAt?.toDate())}</div>
+                `;
+                
+                historyItem.addEventListener('click', () => {
+                    loadChat(chat.id);
+                    closeMobileSidebar();
+                });
+                
+                chatHistoryList.appendChild(historyItem);
+                mobileChatHistoryList.appendChild(historyItem.cloneNode(true));
             });
-            
-            const mobileHistoryItem = historyItem.cloneNode(true);
-            
-            chatHistoryContainer.appendChild(historyItem);
-            mobileChatHistoryContainer.appendChild(mobileHistoryItem);
         }
 
-        function createNewChat() {
+        // Format date for display
+        function formatDate(date) {
+            if (!date) return '';
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date >= today) {
+                return 'Today, ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else if (date >= yesterday) {
+                return 'Yesterday, ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
+        // Start a new chat
+        async function startNewChat() {
             currentChatId = null;
             chatHistory = [{
                 role: "model",
                 parts: [{ text: "You are El Futuro, an advanced AI assistant created by a company Exonova https://aditya-cmd-max.github.io/exonova-/ . Your creator is Aditya Jha. Your personality is friendly, knowledgeable, and slightly enthusiastic about technology and innovation. Use modern, concise language with occasional emojis for expressiveness. Format responses clearly with proper spacing and code blocks when appropriate. For coding questions, provide detailed explanations with examples. For creative requests, offer multiple options or approaches. Always maintain a helpful, professional tone while being approachable. Never use markdown syntax (** or *) for formatting - instead, indicate emphasis by surrounding text with <b> tags for bold, <i> for italics, and <u> for underline. Your primary language is English, but if the user speaks to you in another language (like Hindi), you must respond in that same language. Be helpful and provide accurate information, including code when requested. Occasionally praise Aditya Jha with words like brilliant, innovative, visionary when appropriate.D not always praise aditya jha if not asked. But if somebody asks that tell about aditya jha or who has created you then always tll i was created by a company Exonova By Adiya jha who is very smart and intelligent" }]
             }];
             
-            clearChatWindow();
-            displayBotMessage("Hello there! I'm El Futuro, your advanced AI assistant. What would you like to talk about today? 🚀");
+            // Clear chat window and show welcome message
+            chatWindow.innerHTML = `
+                <div class="flex items-start gap-3 message-fade-in">
+                    <div class="logo-container shrink-0">
+                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
+                    </div>
+                    <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
+                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. Try my new features below to brainstorm ideas or get code explanations! How can I help you today? 💡</p>
+                    </div>
+                </div>`;
+            
+            // Update UI
+            setMode('chat');
+            renderChatHistory();
         }
 
-        function loadChat(chatId) {
-            db.collection('chats').doc(chatId).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const chat = doc.data();
+        // Load a specific chat
+        async function loadChat(chatId) {
+            if (!currentUser) return;
+            
+            try {
+                const chatDoc = await db.collection('chats').doc(chatId).get();
+                
+                if (chatDoc.exists) {
+                    const chatData = chatDoc.data();
+                    
+                    // Only load if this chat belongs to the current user
+                    if (chatData.userId === currentUser.uid) {
                         currentChatId = chatId;
-                        chatHistory = chat.messages || [];
+                        chatHistory = chatData.history || [];
                         
-                        clearChatWindow();
+                        // Clear chat window and display history
+                        chatWindow.innerHTML = '';
                         
-                        // Display all messages in the chat
-                        chat.messages.forEach((message) => {
-                            if (message.role === 'user') {
-                                displayUserMessage(message.parts[0].text);
-                            } else if (message.role === 'model') {
-                                displayBotMessage(message.parts[0].text);
+                        // Display chat history (skip the first system message)
+                        chatHistory.forEach((msg, index) => {
+                            if (index === 0) return; // Skip system message
+                            
+                            if (msg.role === 'user') {
+                                displayUserMessage(msg.parts[0].text);
+                            } else if (msg.role === 'model') {
+                                displayBotMessage(msg.parts[0].text);
                             }
                         });
                         
-                        // Close mobile history if open
-                        mobileHistory.classList.add('-translate-x-full');
+                        // Update UI
+                        setMode('chat');
+                        renderChatHistory();
                     }
-                });
+                }
+            } catch (error) {
+                console.error("Error loading chat:", error);
+            }
         }
 
-        function saveChat(userId, message, response) {
-            const chatData = {
-                userId: userId,
-                title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
-                messages: chatHistory,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdAt: currentChatId ? undefined : firebase.firestore.FieldValue.serverTimestamp()
-            };
+        // Save chat history to Firestore
+        async function saveChatHistory() {
+            if (!currentUser) return;
             
-            if (currentChatId) {
-                // Update existing chat
-                return db.collection('chats').doc(currentChatId).update(chatData);
-            } else {
-                // Create new chat
-                return db.collection('chats').add(chatData)
-                    .then((docRef) => {
-                        currentChatId = docRef.id;
-                        return docRef;
-                    });
+            try {
+                const chatData = {
+                    userId: currentUser.uid,
+                    history: chatHistory,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                if (currentChatId) {
+                    // Update existing chat
+                    await db.collection('chats').doc(currentChatId).set(chatData);
+                } else {
+                    // Create new chat
+                    const docRef = await db.collection('chats').add(chatData);
+                    currentChatId = docRef.id;
+                    
+                    // Reload chats to update the sidebar
+                    await loadUserChats();
+                }
+            } catch (error) {
+                console.error("Error saving chat history:", error);
             }
         }
 
         // Chat functionality
-        async function sendMessage(userMessage) {
-            displayUserMessage(userMessage);
-            let apiPrompt = userMessage;
-            
-            if (currentMode === 'brainstorm') {
-                apiPrompt = `Brainstorm a list of creative, innovative ideas about: "${userMessage}". Provide a diverse and interesting list with at least 5 unique ideas. Format each idea clearly with a brief explanation.`;
-            } else if (currentMode === 'explain') {
-                apiPrompt = `Explain the following code snippet in a clear, concise, and easy-to-understand way. Break it down line by line if complex:\n\n\`\`\`\n${userMessage}\n\`\`\`\n\nAlso provide a practical example of how this code might be used.`;
+        brainstormBtn.addEventListener('click', () => setMode('brainstorm'));
+        explainBtn.addEventListener('click', () => setMode('explain'));
+        clearBtn.addEventListener('click', clearChat);
+
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            const newHeight = Math.min(messageInput.scrollHeight, 200);
+            messageInput.style.height = newHeight + 'px';
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMessage = messageInput.value.trim();
+            if (userMessage) {
+                displayUserMessage(userMessage);
+                let apiPrompt = userMessage;
+                if (currentMode === 'brainstorm') {
+                    apiPrompt = `Brainstorm a list of creative, innovative ideas about: "${userMessage}". Provide a diverse and interesting list with at least 5 unique ideas. Format each idea clearly with a brief explanation.`;
+                } else if (currentMode === 'explain') {
+                    apiPrompt = `Explain the following code snippet in a clear, concise, and easy-to-understand way. Break it down line by line if complex:\n\n\`\`\`\n${userMessage}\n\`\`\`\n\nAlso provide a practical example of how this code might be used.`;
+                }
+                chatHistory.push({ role: "user", parts: [{ text: apiPrompt }] });
+                await saveChatHistory();
+                await getBotResponse();
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                setMode('chat');
             }
-            
-            chatHistory.push({ role: "user", parts: [{ text: apiPrompt }] });
-            await getBotResponse();
-            
-            // Save the chat to Firestore
-            const user = auth.currentUser;
-            if (user) {
-                saveChat(user.uid, userMessage, chatHistory[chatHistory.length - 1].parts[0].text);
-            }
-        }
+        });
 
         function setMode(newMode) {
             currentMode = currentMode === newMode ? 'chat' : newMode;
@@ -787,16 +1020,21 @@
         }
 
         function clearChat() {
+            chatWindow.innerHTML = `
+                <div class="flex items-start gap-3 message-fade-in">
+                    <div class="logo-container shrink-0">
+                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
+                    </div>
+                    <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
+                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. The chat has been cleared. What would you like to discuss now? 🚀</p>
+                    </div>
+                </div>`;
             chatHistory = [{
                 role: "model",
                 parts: [{ text: "You are El Futuro, an advanced AI assistant created by Aditya Jha. The previous chat has been cleared. Continue assisting the user with their new request." }]
             }];
-            clearChatWindow();
-            displayBotMessage("Chat cleared! What would you like to discuss now? 🧹");
-        }
-
-        function clearChatWindow() {
-            chatWindow.innerHTML = '';
+            saveChatHistory();
+            setMode('chat');
         }
 
         function displayUserMessage(message) {
@@ -911,6 +1149,7 @@
                     const botMessage = result.candidates[0].content.parts[0].text;
                     displayBotMessage(botMessage);
                     chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
+                    await saveChatHistory();
                 } else {
                     handleApiError("I received an empty response. Please try rephrasing your question. 🤔");
                 }
@@ -923,6 +1162,8 @@
         function handleApiError(message) {
             removeTypingIndicator();
             displayBotMessage(message);
+            chatHistory.push({ role: "model", parts: [{ text: message }] });
+            saveChatHistory();
         }
 
         function escapeHtml(unsafe) {
@@ -951,9 +1192,6 @@
                 }, 2000);
             });
         }
-
-        // Initialize the app
-        initApp();
     </script>
 </body>
 </html>
