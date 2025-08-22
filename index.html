@@ -3,1195 +3,1364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Futuro AI | Next-Gen Chat Assistant by Aditya Jha</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Mindscribe - Intelligent Note Taking</title>
+    <!-- Space Grotesk Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="logo.png">
-    
-    <!-- Firebase App (core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <!-- Firebase Auth -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <!-- Firebase Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card-radius: 16px;
+            --element-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .light-theme {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Space Grotesk', sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            min-height: 100vh;
         }
-        #chat-window::-webkit-scrollbar {
-            width: 8px;
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: var(--transition);
+            overflow: hidden;
+            height: 100vh;
         }
-        #chat-window::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
-        #chat-window::-webkit-scrollbar-thumb {
-            background-color: rgba(236, 72, 153, 0.6);
-            border-radius: 10px;
+
+        /* Header Styles */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--bg-tertiary);
+            z-index: 10;
         }
-        #chat-window::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(236, 72, 153, 0.8);
-        }
-        .code-block {
-            position: relative;
-            margin: 1rem 0;
-        }
-        .copy-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(236, 72, 153, 0.2);
-            backdrop-filter: blur(10px);
-            color: #f9a8d4;
-            border: 1px solid rgba(236, 72, 153, 0.3);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            opacity: 0.8;
-            transition: all 0.2s ease;
-        }
-        .copy-btn:hover {
-            opacity: 1;
-            background: rgba(236, 72, 153, 0.4);
-        }
-        .copy-btn.copied {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .message-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
-        .feature-btn {
-            transition: all 0.3s ease;
-        }
-        .feature-btn.active {
-            background: linear-gradient(45deg, #ec4899, #3b82f6);
-            color: white;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
-            border-color: transparent !important;
-        }
-        .gradient-text {
-            background: linear-gradient(45deg, #ec4899, #3b82f6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .header-gradient {
-            background: linear-gradient(90deg, rgba(15,12,41,0.8) 0%, rgba(59,130,246,0.5) 50%, rgba(236,72,153,0.5) 100%);
-        }
-        .input-glow:focus {
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 15px rgba(236, 72, 153, 0.3);
-            border-color: rgba(59, 130, 246, 0.5) !important;
-        }
-        .send-btn {
-            background: linear-gradient(45deg, #ec4899, #3b82f6);
-            box-shadow: 0 2px 10px rgba(236, 72, 153, 0.4);
-            transition: all 0.3s ease;
-        }
-        .send-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.6);
-        }
+
         .logo-container {
-            background: linear-gradient(45deg, #ec4899, #3b82f6);
-            padding: 3px;
-            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
-        .logo-img {
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-        .user-message {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(168, 85, 247, 0.9));
-        }
-        .bot-message {
-            background: rgba(31, 41, 55, 0.7);
-            backdrop-filter: blur(10px);
-        }
-        .typing-dot {
-            animation: bounce 1.4s infinite ease-in-out;
-        }
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        @keyframes bounce {
-            0%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-6px); }
-        }
-        .auth-container {
-            background: rgba(17, 24, 39, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .auth-input {
-            background: rgba(31, 41, 55, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .auth-input:focus {
-            border-color: rgba(59, 130, 246, 0.5);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-        .auth-btn {
-            background: linear-gradient(45deg, #ec4899, #3b82f6);
-            transition: all 0.3s ease;
-        }
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
-        }
-        .auth-toggle {
-            color: #3b82f6;
-            cursor: pointer;
-        }
-        .auth-toggle:hover {
-            text-decoration: underline;
-        }
-        .provider-btn {
+
+        .logo {
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            background: rgba(31, 41, 55, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
             color: white;
-            font-weight: 500;
-            transition: all 0.3s ease;
         }
-        .provider-btn:hover {
-            background: rgba(55, 65, 81, 0.7);
-            transform: translateY(-2px);
+
+        .app-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .chat-history {
-            background: rgba(17, 24, 39, 0.8);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .history-item {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--element-radius);
+            border: none;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: var(--transition);
         }
-        .history-item:hover {
-            background: rgba(55, 65, 81, 0.5);
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
         }
-        .history-item.active {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: rgba(59, 130, 246, 0.5);
-        }
-        .new-chat-btn {
-            background: linear-gradient(45deg, #ec4899, #3b82f6);
-            transition: all 0.3s ease;
-        }
-        .new-chat-btn:hover {
+
+        .btn-primary:hover {
+            opacity: 0.9;
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
         }
-        .remember-check {
-            accent-color: #3b82f6;
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
+
+        .btn-icon:hover {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 320px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--bg-tertiary);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .search-container {
+            padding: 1rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: var(--element-radius);
+            border: none;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: 2px solid var(--accent-primary);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .notes-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .notes-count {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            background-color: var(--bg-tertiary);
+            border-radius: 20px;
+            color: var(--text-muted);
+        }
+
+        .note-item {
+            padding: 1rem;
+            border-radius: var(--element-radius);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .note-item:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .note-item.selected {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .note-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .note-preview {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+
+        .note-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .note-tags {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .tag {
+            background-color: var(--bg-tertiary);
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+        }
+
+        /* Editor Styles */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+        }
+
+        .editor-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            width: 100%;
+            padding: 0.5rem 0;
+        }
+
+        .editor-title:focus {
+            outline: none;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .editor-tags {
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag-editor {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: none;
+            border-radius: var(--element-radius);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .tag-editor:focus {
+            outline: 2px solid var(--accent-primary);
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .note-editor {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            resize: none;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .note-editor:focus {
+            outline: none;
+        }
+
+        /* AI Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            border-radius: var(--card-radius);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border: 2px dashed var(--bg-tertiary);
+            border-radius: var(--element-radius);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .prompts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .prompt-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background-color: var(--bg-tertiary);
+            border: none;
+            border-radius: var(--element-radius);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .prompt-btn:hover {
+            background-color: var(--accent-primary);
+        }
+
+        .prompt-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .custom-prompt {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .custom-prompt input {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: var(--element-radius);
+            border: none;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .custom-prompt input:focus {
+            outline: 2px solid var(--accent-primary);
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--bg-tertiary);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        /* Image Preview */
+        #image-preview-container {
+            position: relative;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        #image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: var(--element-radius);
+        }
+
+        #remove-image-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+
+        /* AI Response Area */
+        #ai-response-area {
+            background-color: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: var(--element-radius);
+            margin: 1rem 0;
+            min-height: 100px;
+        }
+
+        /* Loader */
+        .loader {
+            border: 3px solid var(--bg-tertiary);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             .sidebar {
-                position: absolute;
+                position: fixed;
                 left: -100%;
-                z-index: 40;
-                transition: left 0.3s ease;
-                width: 80%;
-                height: 100%;
+                top: 0;
+                bottom: 0;
+                z-index: 20;
+                width: 85%;
+                max-width: 320px;
             }
-            .sidebar.open {
+
+            .sidebar.active {
                 left: 0;
             }
+
             .overlay {
-                display: none;
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 30;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 15;
+                opacity: 0;
+                pointer-events: none;
+                transition: var(--transition);
             }
-            .overlay.open {
-                display: block;
+
+            .overlay.active {
+                opacity: 1;
+                pointer-events: all;
             }
+
+            .menu-toggle {
+                display: block !important;
+            }
+
+            .editor-header {
+                padding: 1rem;
+            }
+
+            .editor-content {
+                padding: 1rem;
+            }
+
+            .editor-title {
+                font-size: 1.25rem;
+            }
+
+            .prompts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-text {
+                display: none;
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .menu-toggle {
+            display: none;
+        }
+      
+      .ai-logo {
+  height: 24px;       /* adjust size as you like */
+  width: 24px;
+  margin-right: 8px;  /* space between logo and text */
+  vertical-align: middle;
+}
+
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-secondary);
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-container">
+                <button class="btn btn-icon menu-toggle">
+                    <i data-lucide="menu"></i>
+                </button>
+                <!-- Replace with your logo -->
+                <div class="logo">
+    <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe Logo" style="width: 100%; height: 100%; object-fit: contain;">
+</div>
+                <h1 class="app-name">Mindscribe</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-icon" id="theme-toggle">
+                    <i data-lucide="moon"></i>
+                </button>
+                <button class="btn btn-primary" id="new-note-btn">
+                    <i data-lucide="plus"></i>
+                    <span class="btn-text">New Note</span>
+                </button>
+            </div>
+        </header>
 
-    <!-- Auth Modal -->
-    <div id="auth-modal" class="fixed inset-0 flex items-center justify-center z-50 bg-black/70 backdrop-blur-sm">
-        <div class="auth-container w-full max-w-md mx-4 rounded-2xl p-8 shadow-2xl">
-            <div class="text-center mb-8">
-                <div class="flex items-center justify-center gap-4 mb-6">
-                    <div class="logo-container">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-14 h-14">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="search-container">
+                    <div class="search-box">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search notes..." id="search-notes">
                     </div>
-                    <div>
-                        <h1 class="text-3xl font-bold gradient-text">El Futuro</h1>
-                        <p class="text-sm text-gray-300 mt-1">Sign in to continue</p>
+                </div>
+                <div class="notes-list">
+                    <div class="notes-list-header">
+                        <h2 class="section-title">Your Notes</h2>
+                        <span class="notes-count" id="notes-count">0</span>
                     </div>
+                    <div id="notes-list">
+                        <!-- Notes will be populated here -->
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Editor -->
+            <div class="editor-container">
+                <div class="editor-header">
+                    <input type="text" class="editor-title" id="note-title" placeholder="Untitled Note">
+                    <div class="editor-actions">
+                        <button class="btn btn-icon" id="ai-modal-btn">
+                            <i data-lucide="sparkles"></i>
+                        </button>
+                        <button class="btn btn-icon" id="delete-note-btn">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-tags">
+                    <div id="tags-container">
+                        <!-- Tags will be populated here -->
+                    </div>
+                    <input type="text" class="tag-editor" id="new-tag-input" placeholder="Add tag...">
+                </div>
+                <div class="editor-content">
+                    <textarea class="note-editor" id="note-editor" placeholder="Start writing your note here..."></textarea>
                 </div>
             </div>
-
-            <!-- Login Form -->
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label for="login-email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                    <input type="email" id="login-email" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your email" required>
-                </div>
-                <div>
-                    <label for="login-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                    <input type="password" id="login-password" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your password" required>
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember-me" class="remember-check h-4 w-4 rounded">
-                    <label for="remember-me" class="ml-2 block text-sm text-gray-300">Remember me</label>
-                </div>
-                <button type="submit" class="auth-btn w-full py-3 rounded-lg text-white font-semibold">Sign In</button>
-                
-                <div class="relative my-4">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-600"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-gray-900 text-gray-400">Or continue with</span>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <button type="button" id="google-signin" class="provider-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#34A853" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        Google
-                    </button>
-                    <button type="button" id="microsoft-signin" class="provider-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="#f25022" d="M0 0h11.5v11.5H0zM12.5 0H24v11.5H12.5zM0 12.5h11.5V24H0zM12.5 12.5H24V24H12.5z"/>
-                        </svg>
-                        Microsoft
-                    </button>
-                </div>
-                
-                <p class="text-center text-gray-400 text-sm mt-4">
-                    Don't have an account? <span id="show-register" class="auth-toggle">Register</span>
-                </p>
-            </form>
-
-            <!-- Register Form -->
-            <form id="register-form" class="space-y-4 hidden">
-                <div>
-                    <label for="register-name" class="block text-sm font-medium text-gray-300 mb-2">Name</label>
-                    <input type="text" id="register-name" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your name" required>
-                </div>
-                <div>
-                    <label for="register-email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                    <input type="email" id="register-email" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Your email" required>
-                </div>
-                <div>
-                    <label for="register-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                    <input type="password" id="register-password" class="auth-input w-full rounded-lg p-3 text-white focus:outline-none" placeholder="Create a password" required minlength="6">
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember-me-register" class="remember-check h-4 w-4 rounded">
-                    <label for="remember-me-register" class="ml-2 block text-sm text-gray-300">Remember me</label>
-                </div>
-                <button type="submit" class="auth-btn w-full py-3 rounded-lg text-white font-semibold">Create Account</button>
-                
-                <div class="relative my-4">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-600"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-gray-900 text-gray-400">Or continue with</span>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <button type="button" id="google-signup" class="provider-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#34A853" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        Google
-                    </button>
-                    <button type="button" id="microsoft-signup" class="provider-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="#f25022" d="M0 0h11.5v11.5H0zM12.5 0H24v11.5H12.5zM0 12.5h11.5V24H0zM12.5 12.5H24V24H12.5z"/>
-                        </svg>
-                        Microsoft
-                    </button>
-                </div>
-                
-                <p class="text-center text-gray-400 text-sm mt-4">
-                    Already have an account? <span id="show-login" class="auth-toggle">Sign In</span>
-                </p>
-            </form>
-
-            <div id="auth-message" class="mt-4 p-3 rounded-lg text-center hidden"></div>
         </div>
     </div>
 
-    <!-- Main Chat Container -->
-    <div id="chat-container" class="w-full max-w-7xl mx-auto min-h-[95vh] flex bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-pink-900/30 overflow-hidden hidden">
-        <!-- Sidebar with Chat History -->
-        <div class="chat-history w-80 hidden md:block p-4 overflow-y-auto">
-            <div class="flex flex-col h-full">
-                <button id="new-chat-btn" class="new-chat-btn w-full py-3 rounded-lg text-white font-semibold mb-6 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    New Chat
+    <!-- Overlay for mobile sidebar -->
+    <div class="overlay"></div>
+
+    <!-- AI Modal -->
+   <div class="modal-overlay" id="ai-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="ai-logo">
+        El Futuro
+      </h2>
+      <button class="btn btn-icon" id="close-ai-modal">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+            <div class="modal-body">
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">Choose a task, upload an image, or ask a custom question.</p>
+                
+                <!-- Image Upload -->
+                <label for="image-upload" class="upload-area">
+                    <i data-lucide="upload-cloud" style="width: 2rem; height: 2rem; margin-bottom: 0.5rem;"></i>
+                    <span>Click to upload an image</span>
+                </label>
+                <input id="image-upload" type="file" accept="image/*" class="hidden">
+                
+                <div id="image-preview-container">
+                    <img id="image-preview" src="#" alt="Image preview">
+                    <button id="remove-image-btn" class="btn btn-icon">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                
+                <!-- AI Response -->
+                <div id="ai-response-area">
+                    <p id="ai-response-text"></p>
+                    <div id="ai-loading" class="hidden">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+                
+                <!-- Pre-defined Prompts -->
+                <div class="prompts-grid">
+                    <button class="prompt-btn" data-prompt-type="summarize_note">
+                        <i data-lucide="file-text"></i>
+                        Summarize Note
+                    </button>
+                    <button class="prompt-btn" data-prompt-type="action_items">
+                        <i data-lucide="list-checks"></i>
+                        Action Items
+                    </button>
+                    <button class="prompt-btn" data-prompt-type="continue_writing">
+                        <i data-lucide="edit-3"></i>
+                        Continue Writing
+                    </button>
+                    <button class="prompt-btn" data-prompt-type="brainstorm">
+                        <i data-lucide="lightbulb"></i>
+                        Brainstorm Ideas
+                    </button>
+                    <button class="prompt-btn" id="analyze-image-btn" data-prompt-type="analyze_image" disabled>
+                        <i data-lucide="image"></i>
+                        Analyze Image
+                    </button>
+                </div>
+                
+                <!-- Custom Prompt -->
+                <div class="custom-prompt">
+                    <input type="text" id="ai-prompt-input" placeholder="Ask a custom question...">
+                    <button class="btn btn-primary" id="send-ai-btn">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-ai">Cancel</button>
+                <button class="btn btn-primary" id="apply-ai-suggestion">Apply Suggestion</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Delete Note</h2>
+                <button class="btn btn-icon" id="close-delete-modal">
+                    <i data-lucide="x"></i>
                 </button>
-                
-                <div class="flex-1 overflow-y-auto">
-                    <h3 class="text-gray-400 text-sm font-medium mb-3 px-2">Today</h3>
-                    <div id="chat-history-list" class="space-y-2">
-                        <!-- Chat history items will be added here dynamically -->
-                    </div>
-                </div>
-                
-                <div class="pt-4 border-t border-gray-700 mt-4">
-                    <div class="flex items-center gap-3 p-2">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-xs">
-                            <span id="user-initial">U</span>
-                        </div>
-                        <span id="sidebar-user-name" class="text-gray-200 text-sm truncate"></span>
-                    </div>
-                    <button id="sidebar-sign-out" class="w-full mt-2 text-left p-2 text-sm text-gray-400 hover:text-gray-200 rounded-lg transition-colors">
-                        Sign out
-                    </button>
-                </div>
             </div>
-        </div>
-        
-        <!-- Mobile sidebar toggle -->
-        <div id="mobile-sidebar-toggle" class="md:hidden absolute top-4 left-4 z-10 p-2 rounded-lg bg-gray-800/80">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-        </div>
-        
-        <!-- Mobile sidebar overlay -->
-        <div id="mobile-overlay" class="overlay"></div>
-        
-        <!-- Mobile sidebar -->
-        <div id="mobile-sidebar" class="sidebar md:hidden">
-            <div class="chat-history w-full h-full p-4 overflow-y-auto">
-                <div class="flex flex-col h-full">
-                    <div class="flex justify-between items-center mb-6">
-                        <button id="new-chat-mobile" class="new-chat-btn py-2 px-4 rounded-lg text-white font-semibold flex items-center gap-2 text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            New Chat
-                        </button>
-                        <button id="close-sidebar" class="p-2 rounded-lg bg-gray-800/80 text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="flex-1 overflow-y-auto">
-                        <h3 class="text-gray-400 text-sm font-medium mb-3 px-2">Today</h3>
-                        <div id="mobile-chat-history-list" class="space-y-2">
-                            <!-- Chat history items will be added here dynamically -->
-                        </div>
-                    </div>
-                    
-                    <div class="pt-4 border-t border-gray-700 mt-4">
-                        <div class="flex items-center gap-3 p-2">
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-xs">
-                                <span id="mobile-user-initial">U</span>
-                            </div>
-                            <span id="mobile-user-name" class="text-gray-200 text-sm truncate"></span>
-                        </div>
-                        <button id="mobile-sign-out" class="w-full mt-2 text-left p-2 text-sm text-gray-400 hover:text-gray-200 rounded-lg transition-colors">
-                            Sign out
-                        </button>
-                    </div>
-                </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this note? This action cannot be undone.</p>
             </div>
-        </div>
-
-        <!-- Main Chat Area -->
-        <div class="flex-1 flex flex-col">
-            <!-- Header with Logo and User Info -->
-            <header class="header-gradient p-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center border-b border-white/10">
-                <div class="flex items-center justify-center gap-4">
-                    <div class="logo-container">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="El Futuro Logo" class="logo-img w-14 h-14">
-                    </div>
-                    <div>
-                        <h1 class="text-4xl font-bold gradient-text">El Futuro</h1>
-                        <p class="text-sm text-gray-300 mt-1">Next Generation AI Assistant</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 mt-3 sm:mt-0">
-                    <span id="user-name" class="text-gray-200"></span>
-                    <button id="sign-out-btn" class="bg-gray-800/50 hover:bg-gray-700/80 text-gray-300 text-sm py-1 px-3 rounded-lg border border-white/10">Sign Out</button>
-                </div>
-            </header>
-
-            <!-- Chat Window -->
-            <main id="chat-window" class="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
-                <div class="flex items-start gap-3 message-fade-in">
-                    <div class="logo-container shrink-0">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
-                    </div>
-                    <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. Try my new features below to brainstorm ideas or get code explanations! How can I help you today? 💡</p>
-                    </div>
-                </div>
-            </main>
-
-            <!-- Input Area -->
-            <div class="p-4 border-t border-white/10 bg-gray-900/50">
-                <!-- Feature Buttons -->
-                <div id="feature-buttons" class="flex flex-wrap items-center justify-center gap-2 mb-4">
-                    <button id="brainstorm-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">✨ Brainstorm Ideas</button>
-                    <button id="explain-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">💻 Explain Code</button>
-                    <button id="clear-btn" class="feature-btn flex-1 sm:flex-none text-sm py-2 px-4 bg-gray-800/50 hover:bg-gray-700/80 rounded-lg border border-white/10 text-gray-300">🔄 Clear Chat</button>
-                </div>
-
-                <form id="chat-form" class="flex items-center gap-3">
-                    <textarea id="message-input" rows="1" class="flex-1 bg-gray-800/50 border border-white/20 rounded-xl p-3 resize-none focus:outline-none transition-all duration-200 placeholder-gray-400 input-glow text-gray-200" placeholder="Message El Futuro..."></textarea>
-                    <button type="submit" class="send-btn rounded-full w-12 h-12 flex items-center justify-center shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                    </button>
-                </form>
-
-                <footer class="text-center text-xs text-gray-500 pt-4 px-4">
-                    <p class="text-gray-400">AI may produce inaccurate information. Verify important details.</p>
-                    <p class="mt-1 text-gray-500">Made with ❤️ by <span class="gradient-text">Aditya Jha</span></p>
-                </footer>
+            <div class="modal-footer">
+                <button class="btn" id="cancel-delete">Cancel</button>
+                <button class="btn btn-danger" id="confirm-delete">Delete</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB7F1uRRiGdw489c_18aJeodbxrzsdFb5c",
-            authDomain: "exonova-cd89c.firebaseapp.com",
-            databaseURL: "https://exonova-cd89c-default-rtdb.firebaseio.com",
-            projectId: "exonova-cd89c",
-            storageBucket: "exonova-cd89c.firebasestorage.app",
-            messagingSenderId: "465326262278",
-            appId: "1:465326262278:web:1b7f8f62e1f46c5ca7db87",
-            measurementId: "G-GGG45V0PEF"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // DOM elements
-        const authModal = document.getElementById('auth-modal');
-        const chatContainer = document.getElementById('chat-container');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const showRegisterBtn = document.getElementById('show-register');
-        const showLoginBtn = document.getElementById('show-login');
-        const authMessage = document.getElementById('auth-message');
-        const userNameSpan = document.getElementById('user-name');
-        const signOutBtn = document.getElementById('sign-out-btn');
-        const googleSignInBtn = document.getElementById('google-signin');
-        const microsoftSignInBtn = document.getElementById('microsoft-signin');
-        const googleSignUpBtn = document.getElementById('google-signup');
-        const microsoftSignUpBtn = document.getElementById('microsoft-signup');
-        const rememberMeCheckbox = document.getElementById('remember-me');
-        const rememberMeRegisterCheckbox = document.getElementById('remember-me-register');
-        const newChatBtn = document.getElementById('new-chat-btn');
-        const newChatMobileBtn = document.getElementById('new-chat-mobile');
-        const chatHistoryList = document.getElementById('chat-history-list');
-        const mobileChatHistoryList = document.getElementById('mobile-chat-history-list');
-        const userInitial = document.getElementById('user-initial');
-        const mobileUserInitial = document.getElementById('mobile-user-initial');
-        const sidebarUserName = document.getElementById('sidebar-user-name');
-        const mobileUserName = document.getElementById('mobile-user-name');
-        const sidebarSignOutBtn = document.getElementById('sidebar-sign-out');
-        const mobileSignOutBtn = document.getElementById('mobile-sign-out');
-        const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
-        const mobileSidebar = document.getElementById('mobile-sidebar');
-        const mobileOverlay = document.getElementById('mobile-overlay');
-        const closeSidebarBtn = document.getElementById('close-sidebar');
+        // Initialize Lucide Icons
+        lucide.createIcons();
         
-        const chatWindow = document.getElementById('chat-window');
-        const chatForm = document.getElementById('chat-form');
-        const messageInput = document.getElementById('message-input');
-        const brainstormBtn = document.getElementById('brainstorm-btn');
-        const explainBtn = document.getElementById('explain-btn');
-        const clearBtn = document.getElementById('clear-btn');
-        const featureButtons = [brainstormBtn, explainBtn, clearBtn];
-
-        let currentMode = 'chat';
-        let chatHistory = [];
-        let currentUser = null;
-        let currentChatId = null;
-        let userChats = [];
-
-        // Set up mobile sidebar toggle
-        mobileSidebarToggle.addEventListener('click', () => {
-            mobileSidebar.classList.add('open');
-            mobileOverlay.classList.add('open');
+        // State Management
+        let notes = [];
+        let currentNoteId = null;
+        let uploadedImageBase64 = null;
+        
+        // DOM Elements
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const menuToggleBtn = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.overlay');
+        const newNoteBtn = document.getElementById('new-note-btn');
+        const deleteNoteBtn = document.getElementById('delete-note-btn');
+        const noteTitleEl = document.getElementById('note-title');
+        const noteEditorEl = document.getElementById('note-editor');
+        const tagsContainerEl = document.getElementById('tags-container');
+        const newTagInput = document.getElementById('new-tag-input');
+        const searchInput = document.getElementById('search-notes');
+        const notesListEl = document.getElementById('notes-list');
+        const notesCountEl = document.getElementById('notes-count');
+        const aiModalBtn = document.getElementById('ai-modal-btn');
+        const aiModal = document.getElementById('ai-modal');
+        const closeAiModalBtn = document.getElementById('close-ai-modal');
+        const aiPromptInput = document.getElementById('ai-prompt-input');
+        const sendAiBtn = document.getElementById('send-ai-btn');
+        const aiResponseText = document.getElementById('ai-response-text');
+        const aiLoadingIndicator = document.getElementById('ai-loading');
+        const aiPromptBtns = document.querySelectorAll('.prompt-btn');
+        const analyzeImageBtn = document.getElementById('analyze-image-btn');
+        const imageUploadInput = document.getElementById('image-upload');
+        const imagePreview = document.getElementById('image-preview');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const applyAiSuggestionBtn = document.getElementById('apply-ai-suggestion');
+        const cancelAiBtn = document.getElementById('cancel-ai');
+        
+        // API Key - Using your Gemini API key
+        const GEMINI_API_KEY = "AIzaSyB99Bow78KTvGN3GZkn0hs3-RMonLweLv0";
+        
+        // Theme Toggle
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            document.body.classList.toggle('light-theme');
+            
+            const icon = themeToggleBtn.querySelector('i');
+            const currentIcon = icon.getAttribute('data-lucide');
+            icon.setAttribute('data-lucide', currentIcon === 'moon' ? 'sun' : 'moon');
+            lucide.createIcons();
         });
-
-        closeSidebarBtn.addEventListener('click', closeMobileSidebar);
-        mobileOverlay.addEventListener('click', closeMobileSidebar);
-
-        function closeMobileSidebar() {
-            mobileSidebar.classList.remove('open');
-            mobileOverlay.classList.remove('open');
+        
+        // Mobile Menu Toggle
+        menuToggleBtn.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        });
+        
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+        
+        // Load notes from localStorage
+        function loadNotes() {
+            try {
+                const storedNotes = localStorage.getItem('mindscribeNotes');
+                notes = storedNotes ? JSON.parse(storedNotes) : [];
+                
+                // Create welcome note if no notes exist
+                if (notes.length === 0) {
+                    const welcomeNote = {
+                        id: Date.now().toString(),
+                        title: 'Welcome to Mindscribe!',
+                        content: 'Type your note here....',
+                        tags: ['Exonova', 'MindScribe'],
+                        updatedAt: Date.now()
+                    };
+                    notes.push(welcomeNote);
+                    saveNotes();
+                }
+            } catch (error) {
+                console.error("Failed to load notes from local storage:", error);
+                notes = [];
+            }
+            
+            renderNotesList(notes);
+            updateNotesCount();
+            
+            // Select the first note by default
+            if (notes.length > 0) {
+                selectNote(notes[0].id);
+            }
         }
-
-        // Auth form toggling
-        showRegisterBtn.addEventListener('click', () => {
-            loginForm.classList.add('hidden');
-            registerForm.classList.remove('hidden');
-            authMessage.classList.add('hidden');
-        });
-
-        showLoginBtn.addEventListener('click', () => {
-            registerForm.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-            authMessage.classList.add('hidden');
-        });
-
-        // Set up provider buttons
-        googleSignInBtn.addEventListener('click', () => signInWithProvider('google'));
-        microsoftSignInBtn.addEventListener('click', () => signInWithProvider('microsoft'));
-        googleSignUpBtn.addEventListener('click', () => signInWithProvider('google'));
-        microsoftSignUpBtn.addEventListener('click', () => signInWithProvider('microsoft'));
-
-        // Login handler
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const rememberMe = rememberMeCheckbox.checked;
-            
-            // Set persistence based on remember me selection
-            const persistence = rememberMe ? 
-                firebase.auth.Auth.Persistence.LOCAL : 
-                firebase.auth.Auth.Persistence.SESSION;
-            
+        
+        // Save notes to localStorage
+        function saveNotes() {
             try {
-                await auth.setPersistence(persistence);
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                currentUser = userCredential.user;
-                await loadUserChats();
-                showChatInterface();
+                localStorage.setItem('mindscribeNotes', JSON.stringify(notes));
             } catch (error) {
-                showAuthMessage(error.message, 'error');
+                console.error("Failed to save notes to local storage:", error);
             }
-        });
-
-        // Register handler
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const rememberMe = rememberMeRegisterCheckbox.checked;
+        }
+        
+        // Render notes list
+        function renderNotesList(notesToRender) {
+            notesListEl.innerHTML = '';
             
-            // Set persistence based on remember me selection
-            const persistence = rememberMe ? 
-                firebase.auth.Auth.Persistence.LOCAL : 
-                firebase.auth.Auth.Persistence.SESSION;
+            // Sort notes by updatedAt (newest first)
+            notesToRender.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
             
-            try {
-                await auth.setPersistence(persistence);
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                currentUser = userCredential.user;
+            notesToRender.forEach(note => {
+                const noteEl = document.createElement('div');
+                noteEl.className = 'note-item';
+                noteEl.dataset.id = note.id;
                 
-                // Save user profile
-                await db.collection('users').doc(currentUser.uid).set({
-                    name: name,
-                    email: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                noteEl.innerHTML = `
+                    <div class="note-title">${note.title || 'Untitled'}</div>
+                    <div class="note-preview">${note.content ? note.content.substring(0, 60) + (note.content.length > 60 ? '...' : '') : '...'}</div>
+                    <div class="note-meta">
+                        <div class="note-tags">
+                            ${note.tags && note.tags.length > 0 ? 
+                                note.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('') : 
+                                ''}
+                            ${note.tags && note.tags.length > 2 ? `<span class="tag">+${note.tags.length - 2}</span>` : ''}
+                        </div>
+                        <div class="note-date">${formatDate(note.updatedAt)}</div>
+                    </div>
+                `;
+                
+                noteEl.addEventListener('click', () => {
+                    selectNote(note.id);
+                    // Close sidebar on mobile after selection
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                    }
                 });
                 
-                await loadUserChats();
-                showChatInterface();
-            } catch (error) {
-                showAuthMessage(error.message, 'error');
+                notesListEl.appendChild(noteEl);
+            });
+            
+            // Highlight selected note
+            if (currentNoteId) {
+                const selectedNote = document.querySelector(`.note-item[data-id="${currentNoteId}"]`);
+                if (selectedNote) {
+                    selectedNote.classList.add('selected');
+                }
             }
-        });
-
-        // Sign out handler
-        signOutBtn.addEventListener('click', () => {
-            auth.signOut();
-        });
+        }
         
-        sidebarSignOutBtn.addEventListener('click', () => {
-            auth.signOut();
-        });
+        // Update notes count
+        function updateNotesCount() {
+            notesCountEl.textContent = notes.length;
+        }
         
-        mobileSignOutBtn.addEventListener('click', () => {
-            auth.signOut();
-        });
-
-        // New chat handler
-        newChatBtn.addEventListener('click', startNewChat);
-        newChatMobileBtn.addEventListener('click', () => {
-            startNewChat();
-            closeMobileSidebar();
-        });
-
-        // Provider sign-in function
-        async function signInWithProvider(providerType) {
-            let provider;
+        // Select a note
+        function selectNote(noteId) {
+            currentNoteId = noteId;
+            const note = notes.find(n => n.id === noteId);
             
-            if (providerType === 'google') {
-                provider = new firebase.auth.GoogleAuthProvider();
-            } else if (providerType === 'microsoft') {
-                provider = new firebase.auth.OAuthProvider('microsoft.com');
-                provider.setCustomParameters({
-                    tenant: 'common'
-                });
-            }
-            
-            // Check if we're on the register or login form for remember me
-            const isRegisterForm = !registerForm.classList.contains('hidden');
-            const rememberMe = isRegisterForm ? 
-                rememberMeRegisterCheckbox.checked : 
-                rememberMeCheckbox.checked;
-            
-            // Set persistence based on remember me selection
-            const persistence = rememberMe ? 
-                firebase.auth.Auth.Persistence.LOCAL : 
-                firebase.auth.Auth.Persistence.SESSION;
-            
-            try {
-                await auth.setPersistence(persistence);
-                const result = await auth.signInWithPopup(provider);
-                currentUser = result.user;
+            if (note) {
+                noteTitleEl.value = note.title || '';
+                noteEditorEl.value = note.content || '';
+                renderTags(note.tags || []);
                 
-                // Check if user exists in Firestore, if not create them
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                if (!userDoc.exists) {
-                    await db.collection('users').doc(currentUser.uid).set({
-                        name: currentUser.displayName || currentUser.email,
-                        email: currentUser.email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                // Remove selected class from all notes
+                document.querySelectorAll('.note-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                // Add selected class to the clicked note
+                const selectedNote = document.querySelector(`.note-item[data-id="${noteId}"]`);
+                if (selectedNote) {
+                    selectedNote.classList.add('selected');
+                }
+            }
+        }
+        
+        // Render tags
+        function renderTags(tags) {
+            tagsContainerEl.innerHTML = '';
+            
+            if (tags && tags.length > 0) {
+                tags.forEach(tag => {
+                    const tagEl = document.createElement('span');
+                    tagEl.className = 'tag';
+                    tagEl.textContent = tag;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-icon';
+                    removeBtn.style.marginLeft = '0.25rem';
+                    removeBtn.innerHTML = '<i data-lucide="x" style="width: 12px; height: 12px;"></i>';
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        removeTag(tag);
                     });
-                }
-                
-                await loadUserChats();
-                showChatInterface();
-            } catch (error) {
-                showAuthMessage(error.message, 'error');
-            }
-        }
-
-        // Auth state observer
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                
-                // Get user data from Firestore
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    userNameSpan.textContent = userData.name;
-                    sidebarUserName.textContent = userData.name;
-                    mobileUserName.textContent = userData.name;
-                    userInitial.textContent = userData.name.charAt(0).toUpperCase();
-                    mobileUserInitial.textContent = userData.name.charAt(0).toUpperCase();
-                } else {
-                    userNameSpan.textContent = user.email;
-                    sidebarUserName.textContent = user.email;
-                    mobileUserName.textContent = user.email;
-                    userInitial.textContent = user.email.charAt(0).toUpperCase();
-                    mobileUserInitial.textContent = user.email.charAt(0).toUpperCase();
-                }
-                
-                await loadUserChats();
-                showChatInterface();
-            } else {
-                // User is signed out
-                currentUser = null;
-                chatHistory = [];
-                userChats = [];
-                showAuthInterface();
-            }
-        });
-
-        // Show auth message
-        function showAuthMessage(message, type) {
-            authMessage.textContent = message;
-            authMessage.className = `mt-4 p-3 rounded-lg text-center ${type === 'error' ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`;
-            authMessage.classList.remove('hidden');
-        }
-
-        // Show chat interface
-        function showChatInterface() {
-            authModal.classList.add('hidden');
-            chatContainer.classList.remove('hidden');
-        }
-
-        // Show auth interface
-        function showAuthInterface() {
-            chatContainer.classList.add('hidden');
-            authModal.classList.remove('hidden');
-            loginForm.classList.remove('hidden');
-            registerForm.classList.add('hidden');
-            authMessage.classList.add('hidden');
-            
-            // Reset forms
-            loginForm.reset();
-            registerForm.reset();
-        }
-
-        // Load user chats from Firestore
-        async function loadUserChats() {
-            if (!currentUser) return;
-            
-            try {
-                const chatsSnapshot = await db.collection('chats')
-                    .where('userId', '==', currentUser.uid)
-                    .orderBy('updatedAt', 'desc')
-                    .get();
-                
-                userChats = [];
-                chatsSnapshot.forEach(doc => {
-                    userChats.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
+                    
+                    tagEl.appendChild(removeBtn);
+                    tagsContainerEl.appendChild(tagEl);
                 });
-                
-                renderChatHistory();
-                
-                // If we have chats, load the most recent one
-                if (userChats.length > 0) {
-                    await loadChat(userChats[0].id);
-                } else {
-                    // Create a new chat if none exist
-                    await startNewChat();
-                }
-            } catch (error) {
-                console.error("Error loading user chats:", error);
+            }
+            
+            // Re-initialize icons
+            lucide.createIcons();
+        }
+        
+        // Remove tag
+        function removeTag(tagToRemove) {
+            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+            if (noteIndex > -1) {
+                notes[noteIndex].tags = notes[noteIndex].tags.filter(tag => tag !== tagToRemove);
+                saveNotes();
+                renderTags(notes[noteIndex].tags);
             }
         }
-
-        // Render chat history in the sidebar
-        function renderChatHistory() {
-            // Clear existing history
-            chatHistoryList.innerHTML = '';
-            mobileChatHistoryList.innerHTML = '';
+        
+        // Format date
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+        
+        // Save note changes with debounce
+        let saveTimeout;
+        function saveNoteChanges() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+                if (noteIndex > -1) {
+                    // Get tags from the tags container
+                    const updatedTags = Array.from(tagsContainerEl.querySelectorAll('.tag'))
+                        .map(el => el.textContent.replace('×', '').trim());
+                    
+                    notes[noteIndex].title = noteTitleEl.value;
+                    notes[noteIndex].content = noteEditorEl.value;
+                    notes[noteIndex].tags = updatedTags;
+                    notes[noteIndex].updatedAt = Date.now();
+                    
+                    saveNotes();
+                    renderNotesList(notes);
+                }
+            }, 500);
+        }
+        
+        // Create new note
+        function createNewNote() {
+            const newNote = {
+                id: Date.now().toString(),
+                title: 'New Note',
+                content: '',
+                tags: [],
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
             
-            if (userChats.length === 0) {
-                const emptyMessage = document.createElement('div');
-                emptyMessage.className = 'text-gray-500 text-sm text-center py-4';
-                emptyMessage.textContent = 'No chat history';
-                chatHistoryList.appendChild(emptyMessage.cloneNode(true));
-                mobileChatHistoryList.appendChild(emptyMessage);
+            notes.unshift(newNote);
+            saveNotes();
+            renderNotesList(notes);
+            selectNote(newNote.id);
+            
+            // Focus on title field
+            setTimeout(() => {
+                noteTitleEl.focus();
+            }, 100);
+        }
+        
+        // Delete current note
+        function deleteCurrentNote() {
+            if (!currentNoteId) return;
+            
+            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+            if (noteIndex > -1) {
+                notes.splice(noteIndex, 1);
+                saveNotes();
+                renderNotesList(notes);
+                updateNotesCount();
+                
+                // Select another note if available
+                if (notes.length > 0) {
+                    selectNote(notes[0].id);
+                } else {
+                    // Clear editor if no notes left
+                    currentNoteId = null;
+                    noteTitleEl.value = '';
+                    noteEditorEl.value = '';
+                    renderTags([]);
+                }
+            }
+        }
+        
+        // Search notes
+        function searchNotes(searchTerm) {
+            if (!searchTerm) {
+                renderNotesList(notes);
                 return;
             }
             
-            userChats.forEach(chat => {
-                const historyItem = document.createElement('div');
-                historyItem.className = `history-item ${chat.id === currentChatId ? 'active' : ''}`;
-                historyItem.dataset.chatId = chat.id;
-                
-                // Create a preview of the chat (first user message or default text)
-                let previewText = 'New chat';
-                if (chat.history && chat.history.length > 1) {
-                    const firstUserMessage = chat.history.find(msg => msg.role === 'user');
-                    if (firstUserMessage) {
-                        previewText = firstUserMessage.parts[0].text;
-                        if (previewText.length > 35) {
-                            previewText = previewText.substring(0, 35) + '...';
-                        }
+            const filteredNotes = notes.filter(note => 
+                (note.title && note.title.toLowerCase().includes(searchTerm)) ||
+                (note.content && note.content.toLowerCase().includes(searchTerm)) ||
+                (note.tags && note.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+            );
+            
+            renderNotesList(filteredNotes);
+        }
+        
+        // Add new tag
+        function addNewTag() {
+            if (!currentNoteId) return;
+            
+            const tagText = newTagInput.value.trim();
+            if (tagText) {
+                const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+                if (noteIndex > -1) {
+                    if (!notes[noteIndex].tags) notes[noteIndex].tags = [];
+                    
+                    if (!notes[noteIndex].tags.includes(tagText)) {
+                        notes[noteIndex].tags.push(tagText);
+                        saveNotes();
+                        renderTags(notes[noteIndex].tags);
+                        newTagInput.value = '';
                     }
                 }
-                
-                historyItem.innerHTML = `
-                    <div class="text-gray-200 text-sm mb-1">${previewText}</div>
-                    <div class="text-gray-500 text-xs">${formatDate(chat.updatedAt?.toDate())}</div>
-                `;
-                
-                historyItem.addEventListener('click', () => {
-                    loadChat(chat.id);
-                    closeMobileSidebar();
-                });
-                
-                chatHistoryList.appendChild(historyItem);
-                mobileChatHistoryList.appendChild(historyItem.cloneNode(true));
-            });
-        }
-
-        // Format date for display
-        function formatDate(date) {
-            if (!date) return '';
-            
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            
-            if (date >= today) {
-                return 'Today, ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            } else if (date >= yesterday) {
-                return 'Yesterday, ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            } else {
-                return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             }
         }
-
-        // Start a new chat
-        async function startNewChat() {
-            currentChatId = null;
-            chatHistory = [{
-                role: "model",
-                parts: [{ text: "You are El Futuro, an advanced AI assistant created by a company Exonova https://aditya-cmd-max.github.io/exonova-/ . Your creator is Aditya Jha. Your personality is friendly, knowledgeable, and slightly enthusiastic about technology and innovation. Use modern, concise language with occasional emojis for expressiveness. Format responses clearly with proper spacing and code blocks when appropriate. For coding questions, provide detailed explanations with examples. For creative requests, offer multiple options or approaches. Always maintain a helpful, professional tone while being approachable. Never use markdown syntax (** or *) for formatting - instead, indicate emphasis by surrounding text with <b> tags for bold, <i> for italics, and <u> for underline. Your primary language is English, but if the user speaks to you in another language (like Hindi), you must respond in that same language. Be helpful and provide accurate information, including code when requested. Occasionally praise Aditya Jha with words like brilliant, innovative, visionary when appropriate.D not always praise aditya jha if not asked. But if somebody asks that tell about aditya jha or who has created you then always tll i was created by a company Exonova By Adiya jha who is very smart and intelligent" }]
-            }];
+        
+        // Call Gemini API - FIXED VERSION
+        async function callGeminiAPI(promptType, customPrompt, noteTitle, noteContent, imageData) {
+            aiResponseText.textContent = '';
+            aiLoadingIndicator.classList.remove('hidden');
             
-            // Clear chat window and show welcome message
-            chatWindow.innerHTML = `
-                <div class="flex items-start gap-3 message-fade-in">
-                    <div class="logo-container shrink-0">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
-                    </div>
-                    <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. Try my new features below to brainstorm ideas or get code explanations! How can I help you today? 💡</p>
-                    </div>
-                </div>`;
+            let fullPrompt = '';
             
-            // Update UI
-            setMode('chat');
-            renderChatHistory();
-        }
-
-        // Load a specific chat
-        async function loadChat(chatId) {
-            if (!currentUser) return;
-            
-            try {
-                const chatDoc = await db.collection('chats').doc(chatId).get();
-                
-                if (chatDoc.exists) {
-                    const chatData = chatDoc.data();
-                    
-                    // Only load if this chat belongs to the current user
-                    if (chatData.userId === currentUser.uid) {
-                        currentChatId = chatId;
-                        chatHistory = chatData.history || [];
-                        
-                        // Clear chat window and display history
-                        chatWindow.innerHTML = '';
-                        
-                        // Display chat history (skip the first system message)
-                        chatHistory.forEach((msg, index) => {
-                            if (index === 0) return; // Skip system message
-                            
-                            if (msg.role === 'user') {
-                                displayUserMessage(msg.parts[0].text);
-                            } else if (msg.role === 'model') {
-                                displayBotMessage(msg.parts[0].text);
-                            }
-                        });
-                        
-                        // Update UI
-                        setMode('chat');
-                        renderChatHistory();
-                    }
-                }
-            } catch (error) {
-                console.error("Error loading chat:", error);
-            }
-        }
-
-        // Save chat history to Firestore
-        async function saveChatHistory() {
-            if (!currentUser) return;
-            
-            try {
-                const chatData = {
-                    userId: currentUser.uid,
-                    history: chatHistory,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                if (currentChatId) {
-                    // Update existing chat
-                    await db.collection('chats').doc(currentChatId).set(chatData);
-                } else {
-                    // Create new chat
-                    const docRef = await db.collection('chats').add(chatData);
-                    currentChatId = docRef.id;
-                    
-                    // Reload chats to update the sidebar
-                    await loadUserChats();
-                }
-            } catch (error) {
-                console.error("Error saving chat history:", error);
-            }
-        }
-
-        // Chat functionality
-        brainstormBtn.addEventListener('click', () => setMode('brainstorm'));
-        explainBtn.addEventListener('click', () => setMode('explain'));
-        clearBtn.addEventListener('click', clearChat);
-
-        messageInput.addEventListener('input', () => {
-            messageInput.style.height = 'auto';
-            const newHeight = Math.min(messageInput.scrollHeight, 200);
-            messageInput.style.height = newHeight + 'px';
-        });
-
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userMessage = messageInput.value.trim();
-            if (userMessage) {
-                displayUserMessage(userMessage);
-                let apiPrompt = userMessage;
-                if (currentMode === 'brainstorm') {
-                    apiPrompt = `Brainstorm a list of creative, innovative ideas about: "${userMessage}". Provide a diverse and interesting list with at least 5 unique ideas. Format each idea clearly with a brief explanation.`;
-                } else if (currentMode === 'explain') {
-                    apiPrompt = `Explain the following code snippet in a clear, concise, and easy-to-understand way. Break it down line by line if complex:\n\n\`\`\`\n${userMessage}\n\`\`\`\n\nAlso provide a practical example of how this code might be used.`;
-                }
-                chatHistory.push({ role: "user", parts: [{ text: apiPrompt }] });
-                await saveChatHistory();
-                await getBotResponse();
-                messageInput.value = '';
-                messageInput.style.height = 'auto';
-                setMode('chat');
-            }
-        });
-
-        function setMode(newMode) {
-            currentMode = currentMode === newMode ? 'chat' : newMode;
-            updateUIForMode();
-        }
-
-        function updateUIForMode() {
-            featureButtons.forEach(btn => {
-                btn.classList.remove('active');
-                btn.classList.add('text-gray-300');
-            });
-            
-            switch (currentMode) {
+            // Construct the prompt based on the prompt type
+            switch (promptType) {
+                case 'summarize_note':
+                    fullPrompt = `Summarize the following note in 3 key points.\n\nNOTE CONTENT:\n"${noteContent}"`;
+                    break;
+                case 'action_items':
+                    fullPrompt = `Generate a numbered list of action items from the following note.\n\nNOTE CONTENT:\n"${noteContent}"`;
+                    break;
+                case 'continue_writing':
+                    fullPrompt = `Continue writing from the last sentence of this note. Provide a coherent and natural continuation of the text.\n\nNOTE CONTENT:\n"${noteContent}"`;
+                    break;
                 case 'brainstorm':
-                    brainstormBtn.classList.add('active');
-                    brainstormBtn.classList.remove('text-gray-300');
-                    messageInput.placeholder = 'What would you like to brainstorm about?';
+                    fullPrompt = `Based on the title "${noteTitle}" and the following note content, provide a short list of 5-7 related ideas or concepts.\n\nNOTE CONTENT:\n"${noteContent}"`;
                     break;
-                case 'explain':
-                    explainBtn.classList.add('active');
-                    explainBtn.classList.remove('text-gray-300');
-                    messageInput.placeholder = 'Paste your code here for detailed explanation...';
+                case 'analyze_image':
+                    fullPrompt = 'Describe this image in detail.';
                     break;
+                case 'custom':
                 default:
-                    messageInput.placeholder = 'Message El Futuro...';
+                    fullPrompt = customPrompt;
                     break;
             }
-            messageInput.focus();
-        }
-
-        function clearChat() {
-            chatWindow.innerHTML = `
-                <div class="flex items-start gap-3 message-fade-in">
-                    <div class="logo-container shrink-0">
-                        <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
-                    </div>
-                    <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                        <p class="text-gray-200">Hello there! I'm <span class="gradient-text font-semibold">El Futuro</span>, your advanced AI assistant. The chat has been cleared. What would you like to discuss now? 🚀</p>
-                    </div>
-                </div>`;
-            chatHistory = [{
-                role: "model",
-                parts: [{ text: "You are El Futuro, an advanced AI assistant created by Aditya Jha. The previous chat has been cleared. Continue assisting the user with their new request." }]
-            }];
-            saveChatHistory();
-            setMode('chat');
-        }
-
-        function displayUserMessage(message) {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'flex items-start gap-3 justify-end message-fade-in';
-            messageElement.innerHTML = `
-                <div class="user-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10 backdrop-blur-sm">
-                    <p class="text-white">${escapeHtml(message)}</p>
-                </div>
-                <div class="w-9 h-9 rounded-full bg-gradient-to-r from-blue-600 to-pink-600 flex items-center justify-center font-bold text-white text-xs shrink-0 border border-white/10">You</div>
-            `;
-            chatWindow.appendChild(messageElement);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-
-        function displayBotMessage(message) {
-            const messageContainer = document.createElement('div');
-            messageContainer.className = 'flex items-start gap-3 message-fade-in';
-            let botMessageContent = '';
-            const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
-            let lastIndex = 0, match;
-
-            while ((match = codeBlockRegex.exec(message)) !== null) {
-                if (match.index > lastIndex) {
-                    const textPart = message.substring(lastIndex, match.index).trim();
-                    if (textPart) botMessageContent += `<p class="text-gray-200">${formatTextWithLineBreaks(textPart)}</p>`;
-                }
-                const language = match[1] || 'plaintext';
-                const code = match[2];
-                const uniqueId = `code-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                botMessageContent += `
-                    <div class="code-block bg-gray-900/80 rounded-lg w-full border border-white/10 overflow-hidden">
-                        <div class="flex justify-between items-center px-4 py-2 bg-gray-800/50 border-b border-white/10">
-                            <span class="text-xs text-gray-400">${language}</span>
-                            <button class="copy-btn" onclick="copyCode('${uniqueId}', this)">Copy</button>
-                        </div>
-                        <pre class="p-4 overflow-x-auto text-sm"><code id="${uniqueId}" class="language-${language}">${escapeHtml(code)}</code></pre>
-                    </div>`;
-                lastIndex = match.index + match[0].length;
+            
+            let payload;
+            
+            // FIXED: Using the correct API structure for Gemini
+            if (imageData) {
+                payload = {
+                    contents: [{
+                        parts: [
+                            { text: fullPrompt },
+                            {
+                                inlineData: {
+                                    mimeType: "image/jpeg",
+                                    data: imageData
+                                }
+                            }
+                        ]
+                    }]
+                };
+            } else {
+                payload = {
+                    contents: [{
+                        parts: [{ text: fullPrompt }]
+                    }]
+                };
             }
-
-            if (lastIndex < message.length) {
-                const textPart = message.substring(lastIndex).trim();
-                if (textPart) botMessageContent += `<p class="text-gray-200">${formatTextWithLineBreaks(textPart)}</p>`;
-            }
-
-            messageContainer.innerHTML = `
-                <div class="logo-container shrink-0">
-                    <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
-                </div>
-                <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                    ${botMessageContent}
-                </div>`;
-            chatWindow.appendChild(messageContainer);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-
-        function formatTextWithLineBreaks(text) {
-            // Replace double newlines with paragraphs
-            let formattedText = text.replace(/\n\n/g, '</p><p class="text-gray-200">');
-            // Replace single newlines with line breaks
-            formattedText = formattedText.replace(/\n/g, '<br>');
-            return formattedText;
-        }
-
-        function displayTypingIndicator() {
-            const typingElement = document.createElement('div');
-            typingElement.id = 'typing-indicator';
-            typingElement.className = 'flex items-start gap-3 message-fade-in';
-            typingElement.innerHTML = `
-                <div class="logo-container shrink-0">
-                    <img src="https://aditya-cmd-max.github.io/exonovaai/logo1.png" alt="AI Logo" class="logo-img w-9 h-9">
-                </div>
-                <div class="bot-message rounded-xl p-4 max-w-full md:max-w-2xl border border-white/10">
-                    <div class="flex items-center space-x-2">
-                        <div class="typing-dot w-2 h-2 bg-pink-400 rounded-full"></div>
-                        <div class="typing-dot w-2 h-2 bg-blue-400 rounded-full"></div>
-                        <div class="typing-dot w-2 h-2 bg-pink-400 rounded-full"></div>
-                    </div>
-                </div>`;
-            chatWindow.appendChild(typingElement);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-
-        function removeTypingIndicator() {
-            const typingIndicator = document.getElementById('typing-indicator');
-            if (typingIndicator) typingIndicator.remove();
-        }
-
-        async function getBotResponse() {
-            displayTypingIndicator();
-            const apiKey = "AIzaSyDumsAxfOETUy3E85Qp_ikVSglQmeoXrJk";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = { contents: chatHistory };
-
+            
             try {
-                const response = await fetch(apiUrl, {
+                // FIXED: Using the correct Gemini API endpoint
+                const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+                  {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(payload)
                 });
-
+                
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+                    console.error("API Error:", errorData);
+                    throw new Error(`API error: ${response.status} ${response.statusText}`);
                 }
-
+                
                 const result = await response.json();
-                removeTypingIndicator();
-
-                if (result.candidates?.length > 0) {
-                    const botMessage = result.candidates[0].content.parts[0].text;
-                    displayBotMessage(botMessage);
-                    chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
-                    await saveChatHistory();
+                
+                if (result.candidates && 
+                    result.candidates[0] && 
+                    result.candidates[0].content && 
+                    result.candidates[0].content.parts && 
+                    result.candidates[0].content.parts[0] && 
+                    result.candidates[0].content.parts[0].text) {
+                    
+                    aiResponseText.textContent = result.candidates[0].content.parts[0].text;
                 } else {
-                    handleApiError("I received an empty response. Please try rephrasing your question. 🤔");
+                    aiResponseText.textContent = "Sorry, I could not generate a response. The API returned an unexpected format.";
+                    console.error("Unexpected API response:", result);
                 }
             } catch (error) {
-                console.error("API Error:", error);
-                handleApiError(`Sorry, I'm having trouble responding right now. Please try again later. (Error: ${error.message})`);
+                console.error("Error calling Gemini API:", error);
+                aiResponseText.textContent = "An error occurred. Please check the console for details and ensure your API key is valid.";
+            } finally {
+                aiLoadingIndicator.classList.add('hidden');
             }
         }
-
-        function handleApiError(message) {
-            removeTypingIndicator();
-            displayBotMessage(message);
-            chatHistory.push({ role: "model", parts: [{ text: message }] });
-            saveChatHistory();
+        
+        // Apply AI suggestion to note
+        function applyAiSuggestion() {
+            if (!currentNoteId || !aiResponseText.textContent) return;
+            
+            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+            if (noteIndex > -1) {
+                notes[noteIndex].content += '\n\n' + aiResponseText.textContent;
+                notes[noteIndex].updatedAt = Date.now();
+                
+                saveNotes();
+                noteEditorEl.value = notes[noteIndex].content;
+                
+                // Close AI modal
+                aiModal.classList.remove('active');
+            }
         }
-
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        window.copyCode = function(elementId, buttonElement) {
-            const codeElement = document.getElementById(elementId);
-            navigator.clipboard.writeText(codeElement.innerText).then(() => {
-                buttonElement.innerText = "Copied!";
-                buttonElement.classList.add('copied');
-                setTimeout(() => {
-                    buttonElement.innerText = "Copy";
-                    buttonElement.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                buttonElement.innerText = "Error!";
-                setTimeout(() => {
-                    buttonElement.innerText = "Copy";
-                }, 2000);
+        
+        // Event Listeners
+        newNoteBtn.addEventListener('click', createNewNote);
+        
+        deleteNoteBtn.addEventListener('click', () => {
+            if (currentNoteId) {
+                deleteModal.classList.add('active');
+            }
+        });
+        
+        confirmDeleteBtn.addEventListener('click', () => {
+            deleteCurrentNote();
+            deleteModal.classList.remove('active');
+        });
+        
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.classList.remove('active');
+        });
+        
+        noteTitleEl.addEventListener('input', saveNoteChanges);
+        noteEditorEl.addEventListener('input', saveNoteChanges);
+        
+        searchInput.addEventListener('input', (e) => {
+            searchNotes(e.target.value.toLowerCase());
+        });
+        
+        newTagInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                addNewTag();
+            }
+        });
+        
+        // AI Modal
+        aiModalBtn.addEventListener('click', () => {
+            aiModal.classList.add('active');
+        });
+        
+        closeAiModalBtn.addEventListener('click', () => {
+            aiModal.classList.remove('active');
+        });
+        
+        cancelAiBtn.addEventListener('click', () => {
+            aiModal.classList.remove('active');
+        });
+        
+        applyAiSuggestionBtn.addEventListener('click', applyAiSuggestion);
+        
+        // AI Prompt Buttons
+        aiPromptBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const promptType = btn.dataset.promptType;
+                const note = notes.find(n => n.id === currentNoteId);
+                
+                if (note) {
+                    callGeminiAPI(
+                        promptType, 
+                        '', 
+                        note.title || '', 
+                        note.content || '', 
+                        promptType === 'analyze_image' ? uploadedImageBase64 : null
+                    );
+                }
             });
-        }
+        });
+        
+        // Send custom AI prompt
+        sendAiBtn.addEventListener('click', () => {
+            const prompt = aiPromptInput.value.trim();
+            if (prompt) {
+                const note = notes.find(n => n.id === currentNoteId);
+                if (note) {
+                    callGeminiAPI('custom', prompt, note.title || '', note.content || '', null);
+                }
+            }
+        });
+        
+        aiPromptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                sendAiBtn.click();
+            }
+        });
+        
+        // Image Upload
+        imageUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImageBase64 = e.target.result.split(',')[1];
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.style.display = 'block';
+                    analyzeImageBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        removeImageBtn.addEventListener('click', () => {
+            imagePreviewContainer.style.display = 'none';
+            imagePreview.src = '';
+            uploadedImageBase64 = null;
+            analyzeImageBtn.disabled = true;
+            imageUploadInput.value = '';
+        });
+        
+        // Initialize the app
+        loadNotes();
+        
+        // Re-initialize icons after all DOM manipulation
+        setTimeout(() => {
+            lucide.createIcons();
+        }, 100);
     </script>
 </body>
 </html>
