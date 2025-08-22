@@ -1150,8 +1150,18 @@
             // Construct the prompt based on the prompt type
             switch (promptType) {
                 case 'summarize_note':
-                    fullPrompt = `Summarize the following note in 3 key points.\n\nNOTE CONTENT:\n"${noteContent}"`;
-                    break;
+                    fullPrompt = `Summarize the following note into exactly 3 clear bullet points.
+
+NOTE CONTENT:
+"${noteContent || "No content provided"}"
+
+Instructions:
+1. Use plain text only (no **, *, ##, or Markdown).
+2. Format as 3 bullet points with bullet point(●).
+3. Each point should be short and focused.
+4. Do not add extra commentary before or after the summary.
+`;
+    break;
                 case 'action_items':
                     fullPrompt = `Generate a numbered list of action items from the following note.\n\nNOTE CONTENT:\n"${noteContent}"`;
                     break;
@@ -1162,8 +1172,17 @@
                     fullPrompt = `Based on the title "${noteTitle}" and the following note content, provide a short list of 5-7 related ideas or concepts.\n\nNOTE CONTENT:\n"${noteContent}"`;
                     break;
                 case 'analyze_image':
-                    fullPrompt = 'Describe this image in detail.';
-                    break;
+                    fullPrompt = `You are Mindscribe AI, helping the user analyze an image. 
+Look at the provided image carefully and give a detailed description.
+
+Instructions:
+1. Explain what the image contains in plain text.
+2. Do NOT use Markdown formatting (no **, *, ##).
+3. Use clear sentences. If needed, use bullet points(●) with dashes (-).
+4. Mention colors, objects, text (if visible), and overall theme.
+5. Keep it simple and helpful for note-taking.
+`;
+    break;
                 case 'custom':
                 default:
                     fullPrompt = `You are Mindscribe AI, an assistant that helps with note-taking. 
