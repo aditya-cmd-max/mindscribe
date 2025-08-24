@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mindscribe - Simply Learn</title>
+    <title>Mindscribe - Simply Learn It</title>
     <!-- Space Grotesk Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts for enhanced typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Animate.css for smooth animations -->
+    <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-   
     <link rel="icon" type="image/x-icon" href="https://aditya-cmd-max.github.io/mindscribe/logo1.png">
     <style>
         :root {
@@ -34,12 +33,13 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --card-radius: 20px;
-            --element-radius: 14px;
+            --card-radius: 16px;
+            --element-radius: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
             --glass-bg: rgba(30, 41, 59, 0.7);
             --glass-border: rgba(255, 255, 255, 0.1);
+            --sidebar-width: 320px;
         }
 
         .light-theme {
@@ -85,7 +85,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 1rem 2rem;
+            padding: 1rem 1.5rem;
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -124,6 +124,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
+        }
+
+        .slogan {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: -5px;
+            font-weight: 400;
         }
 
         .header-actions {
@@ -181,7 +188,7 @@
 
         /* Sidebar Styles */
         .sidebar {
-            width: 340px;
+            width: var(--sidebar-width);
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -193,9 +200,24 @@
             z-index: 5;
         }
 
-        .search-container {
+        .sidebar-header {
             padding: 1.25rem;
             border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .new-note-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .search-container {
+            padding: 0 1.25rem 1.25rem;
         }
 
         .search-box {
@@ -268,6 +290,19 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .note-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+            transition: var(--transition);
         }
 
         .note-item:hover {
@@ -276,10 +311,18 @@
             border-color: rgba(99, 102, 241, 0.3);
         }
 
+        .note-item:hover::before {
+            height: 100%;
+        }
+
         .note-item.selected {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
             border-left: 4px solid var(--accent-primary);
             box-shadow: var(--shadow);
+        }
+
+        .note-item.selected::before {
+            height: 100%;
         }
 
         .note-title {
@@ -316,11 +359,26 @@
         }
 
         .tag {
-            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             padding: 0.25rem 0.6rem;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 500;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .tag-remove {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0;
+            font-size: 0.7rem;
         }
 
         /* Editor Styles */
@@ -374,6 +432,8 @@
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            max-height: 120px;
+            overflow-y: auto;
         }
 
         .tag-editor {
@@ -384,6 +444,7 @@
             padding: 0.5rem 1rem;
             font-size: 0.9rem;
             transition: var(--transition);
+            min-width: 120px;
         }
 
         .tag-editor:focus {
@@ -451,6 +512,8 @@
             transform: translateY(20px) scale(0.95);
             transition: var(--transition);
             border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
         }
 
         .modal-overlay.active .modal-content {
@@ -479,8 +542,10 @@
 
         .modal-body {
             padding: 2rem;
-            max-height: 60vh;
             overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .upload-area {
@@ -629,6 +694,8 @@
             margin: 1.5rem 0;
             min-height: 120px;
             border: 1px solid var(--glass-border);
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         /* Loader */
@@ -787,7 +854,7 @@
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 8px;
         }
 
         ::-webkit-scrollbar-track {
@@ -823,6 +890,98 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Tutorial Overlay */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .tutorial-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .tutorial-content {
+            background: var(--bg-secondary);
+            border-radius: var(--card-radius);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .tutorial-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .tutorial-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .tutorial-dots {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .tutorial-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .tutorial-dot.active {
+            background: var(--accent-primary);
+            transform: scale(1.2);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: var(--element-radius);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="dark-theme">
@@ -836,15 +995,17 @@
                 <div class="logo">
                     <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe Logo" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
-                <h1 class="app-name">Mindscribe</h1>
+                <div>
+                    <h1 class="app-name">Mindscribe</h1>
+                    <div class="slogan">Simply learn it</div>
+                </div>
             </div>
             <div class="header-actions">
                 <button class="btn btn-icon" id="theme-toggle">
                     <i data-lucide="moon"></i>
                 </button>
-                <button class="btn btn-primary" id="new-note-btn">
-                    <i data-lucide="plus"></i>
-                    <span class="btn-text">New Note</span>
+                <button class="btn btn-icon" id="tutorial-btn">
+                    <i data-lucide="help-circle"></i>
                 </button>
             </div>
         </header>
@@ -853,6 +1014,12 @@
         <div class="main-content">
             <!-- Sidebar -->
             <aside class="sidebar">
+                <div class="sidebar-header">
+                    <button class="btn btn-primary new-note-btn" id="sidebar-new-note-btn">
+                        <i data-lucide="plus"></i>
+                        <span>New Note</span>
+                    </button>
+                </div>
                 <div class="search-container">
                     <div class="search-box">
                         <i data-lucide="search" class="search-icon"></i>
@@ -935,14 +1102,6 @@
                     </button>
                 </div>
                 
-                <!-- AI Response -->
-                <div id="ai-response-area">
-                    <p id="ai-response-text"></p>
-                    <div id="ai-loading" class="hidden">
-                        <div class="loader"></div>
-                    </div>
-                </div>
-                
                 <!-- Pre-defined Prompts -->
                 <div class="prompts-grid">
                     <button class="prompt-btn" data-prompt-type="summarize_note">
@@ -965,6 +1124,14 @@
                         <i data-lucide="image" style="width: 24px; height: 24px;"></i>
                         Analyze Image
                     </button>
+                </div>
+                
+                <!-- AI Response -->
+                <div id="ai-response-area">
+                    <p id="ai-response-text">Your AI response will appear here...</p>
+                    <div id="ai-loading" class="hidden">
+                        <div class="loader"></div>
+                    </div>
                 </div>
                 
                 <!-- Custom Prompt -->
@@ -1001,6 +1168,39 @@
         </div>
     </div>
 
+    <!-- Tutorial Modal -->
+    <div class="tutorial-overlay" id="tutorial-modal">
+        <div class="tutorial-content">
+            <button class="tutorial-close" id="close-tutorial">
+                <i data-lucide="x"></i>
+            </button>
+            <h2 style="margin-bottom: 1rem;">Welcome to Mindscribe!</h2>
+            <div id="tutorial-slide-1">
+                <p>Mindscribe helps you take notes and enhance them with AI. Here's how to get started:</p>
+                <ul style="margin: 1rem 0 1rem 1.5rem;">
+                    <li>Create new notes with the button in the sidebar</li>
+                    <li>Add tags to organize your notes</li>
+                    <li>Use the AI assistant to enhance your content</li>
+                    <li>Search through all your notes easily</li>
+                </ul>
+            </div>
+            <div class="tutorial-navigation">
+                <button class="btn" id="tutorial-next">Next</button>
+            </div>
+            <div class="tutorial-dots">
+                <div class="tutorial-dot active"></div>
+                <div class="tutorial-dot"></div>
+                <div class="tutorial-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i data-lucide="info" id="notification-icon"></i>
+        <span id="notification-text"></span>
+    </div>
+
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();
@@ -1009,13 +1209,14 @@
         let notes = [];
         let currentNoteId = null;
         let uploadedImageBase64 = null;
+        let tutorialSlide = 1;
         
         // DOM Elements
         const themeToggleBtn = document.getElementById('theme-toggle');
         const menuToggleBtn = document.querySelector('.menu-toggle');
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.querySelector('.overlay');
-        const newNoteBtn = document.getElementById('new-note-btn');
+        const newNoteBtn = document.getElementById('sidebar-new-note-btn');
         const deleteNoteBtn = document.getElementById('delete-note-btn');
         const noteTitleEl = document.getElementById('note-title');
         const noteEditorEl = document.getElementById('note-editor');
@@ -1042,9 +1243,36 @@
         const cancelDeleteBtn = document.getElementById('cancel-delete');
         const applyAiSuggestionBtn = document.getElementById('apply-ai-suggestion');
         const cancelAiBtn = document.getElementById('cancel-ai');
+        const tutorialBtn = document.getElementById('tutorial-btn');
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const closeTutorialBtn = document.getElementById('close-tutorial');
+        const tutorialNextBtn = document.getElementById('tutorial-next');
+        const notification = document.getElementById('notification');
+        const notificationIcon = document.getElementById('notification-icon');
+        const notificationText = document.getElementById('notification-text');
         
         // API Key - Using your Gemini API key
         const GEMINI_API_KEY = "AIzaSyB99Bow78KTvGN3GZkn0hs3-RMonLweLv0";
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            notificationText.textContent = message;
+            
+            // Set icon based on type
+            let iconName = 'info';
+            if (type === 'success') iconName = 'check-circle';
+            if (type === 'error') iconName = 'alert-circle';
+            
+            notificationIcon.setAttribute('data-lucide', iconName);
+            lucide.createIcons();
+            
+            notification.classList.add('show');
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
         
         // Theme Toggle
         themeToggleBtn.addEventListener('click', () => {
@@ -1055,6 +1283,8 @@
             const currentIcon = icon.getAttribute('data-lucide');
             icon.setAttribute('data-lucide', currentIcon === 'moon' ? 'sun' : 'moon');
             lucide.createIcons();
+            
+            showNotification(`Switched to ${document.body.classList.contains('dark-theme') ? 'dark' : 'light'} mode`);
         });
         
         // Mobile Menu Toggle
@@ -1068,6 +1298,64 @@
             overlay.classList.remove('active');
         });
         
+        // Tutorial
+        tutorialBtn.addEventListener('click', () => {
+            tutorialModal.classList.add('active');
+        });
+        
+        closeTutorialBtn.addEventListener('click', () => {
+            tutorialModal.classList.remove('active');
+        });
+        
+        tutorialNextBtn.addEventListener('click', () => {
+            tutorialSlide++;
+            if (tutorialSlide > 3) {
+                tutorialModal.classList.remove('active');
+                tutorialSlide = 1;
+            } else {
+                // Update tutorial content based on slide
+                const dots = document.querySelectorAll('.tutorial-dot');
+                dots.forEach((dot, index) => {
+                    if (index === tutorialSlide - 1) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+                
+                // Update tutorial content
+                const tutorialSlideEl = document.getElementById('tutorial-slide-1');
+                if (tutorialSlide === 2) {
+                    tutorialSlideEl.innerHTML = `
+                        <h3 style="margin-bottom: 1rem;">Using AI Features</h3>
+                        <p>The AI assistant can help you with:</p>
+                        <ul style="margin: 1rem 0 1rem 1.5rem;">
+                            <li>Summarizing your notes</li>
+                            <li>Extracting action items</li>
+                            <li>Continuing your writing</li>
+                            <li>Brainstorming ideas</li>
+                            <li>Analyzing images</li>
+                        </ul>
+                        <p>Just click the sparkles icon to get started!</p>
+                    `;
+                    tutorialNextBtn.textContent = 'Next';
+                } else if (tutorialSlide === 3) {
+                    tutorialSlideEl.innerHTML = `
+                        <h3 style="margin-bottom: 1rem;">Tips & Tricks</h3>
+                        <ul style="margin: 1rem 0 1rem 1.5rem;">
+                            <li>Use tags to organize your notes by topic</li>
+                            <li>Search helps you find notes quickly</li>
+                            <li>Switch between light and dark mode</li>
+                            <li>Your notes are saved automatically</li>
+                            <li>You can upload images for AI analysis</li>
+                        </ul>
+                        <p>Enjoy using Mindscribe!</p>
+                    `;
+                    tutorialNextBtn.textContent = 'Get Started';
+                }
+            }
+        });
+        
         // Load notes from localStorage
         function loadNotes() {
             try {
@@ -1079,12 +1367,17 @@
                     const welcomeNote = {
                         id: Date.now().toString(),
                         title: 'Welcome to Mindscribe!',
-                        content: 'Type your note here....',
-                        tags: ['Exonova', 'MindScribe'],
+                        content: 'This is your first note. You can edit this text, add tags, and use the AI assistant to enhance your notes.\n\nClick the sparkles icon to see what the AI can do for you!',
+                        tags: ['Welcome', 'Getting Started'],
                         updatedAt: Date.now()
                     };
                     notes.push(welcomeNote);
                     saveNotes();
+                    
+                    // Show tutorial on first use
+                    setTimeout(() => {
+                        tutorialModal.classList.add('active');
+                    }, 1000);
                 }
             } catch (error) {
                 console.error("Failed to load notes from local storage:", error);
@@ -1195,8 +1488,7 @@
                     tagEl.textContent = tag;
                     
                     const removeBtn = document.createElement('button');
-                    removeBtn.className = 'btn btn-icon';
-                    removeBtn.style.marginLeft = '0.25rem';
+                    removeBtn.className = 'tag-remove';
                     removeBtn.innerHTML = '<i data-lucide="x" style="width: 12px; height: 12px;"></i>';
                     removeBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -1219,6 +1511,7 @@
                 notes[noteIndex].tags = notes[noteIndex].tags.filter(tag => tag !== tagToRemove);
                 saveNotes();
                 renderTags(notes[noteIndex].tags);
+                showNotification(`Removed tag: ${tagToRemove}`);
             }
         }
         
@@ -1270,6 +1563,8 @@
             setTimeout(() => {
                 noteTitleEl.focus();
             }, 100);
+            
+            showNotification('Created a new note');
         }
         
         // Delete current note
@@ -1278,6 +1573,7 @@
             
             const noteIndex = notes.findIndex(n => n.id === currentNoteId);
             if (noteIndex > -1) {
+                const noteTitle = notes[noteIndex].title || 'Untitled';
                 notes.splice(noteIndex, 1);
                 saveNotes();
                 renderNotesList(notes);
@@ -1293,6 +1589,8 @@
                     noteEditorEl.value = '';
                     renderTags([]);
                 }
+                
+                showNotification(`Deleted note: ${noteTitle}`);
             }
         }
         
@@ -1327,6 +1625,9 @@
                         saveNotes();
                         renderTags(notes[noteIndex].tags);
                         newTagInput.value = '';
+                        showNotification(`Added tag: ${tagText}`);
+                    } else {
+                        showNotification('Tag already exists', 'error');
                     }
                 }
             }
@@ -1334,8 +1635,12 @@
         
         // Call Gemini API - FIXED VERSION
         async function callGeminiAPI(promptType, customPrompt, noteTitle, noteContent, imageData) {
-            aiResponseText.textContent = '';
+            aiResponseText.textContent = 'Generating response...';
             aiLoadingIndicator.classList.remove('hidden');
+            
+            // Scroll to response area
+            const modalBody = document.querySelector('.modal-body');
+            modalBody.scrollTo({ top: modalBody.scrollHeight, behavior: 'smooth' });
             
             let fullPrompt = '';
             
@@ -1446,15 +1751,23 @@ Instructions:
                     result.candidates[0].content.parts[0].text) {
                     
                     aiResponseText.textContent = result.candidates[0].content.parts[0].text;
+                    showNotification('AI response generated successfully', 'success');
                 } else {
                     aiResponseText.textContent = "Sorry, I could not generate a response. The API returned an unexpected format.";
                     console.error("Unexpected API response:", result);
+                    showNotification('Failed to generate AI response', 'error');
                 }
             } catch (error) {
                 console.error("Error calling Gemini API:", error);
                 aiResponseText.textContent = "An error occurred. Please check the console for details and ensure your API key is valid.";
+                showNotification('Error connecting to AI service', 'error');
             } finally {
                 aiLoadingIndicator.classList.add('hidden');
+                
+                // Scroll to response area
+                setTimeout(() => {
+                    modalBody.scrollTo({ top: modalBody.scrollHeight, behavior: 'smooth' });
+                }, 100);
             }
         }
         
@@ -1472,6 +1785,8 @@ Instructions:
                 
                 // Close AI modal
                 aiModal.classList.remove('active');
+                
+                showNotification('AI suggestion applied to note');
             }
         }
         
@@ -1546,7 +1861,10 @@ Instructions:
                 const note = notes.find(n => n.id === currentNoteId);
                 if (note) {
                     callGeminiAPI('custom', prompt, note.title || '', note.content || '', null);
+                    aiPromptInput.value = '';
                 }
+            } else {
+                showNotification('Please enter a question first', 'error');
             }
         });
         
@@ -1566,6 +1884,7 @@ Instructions:
                     imagePreview.src = e.target.result;
                     imagePreviewContainer.style.display = 'block';
                     analyzeImageBtn.disabled = false;
+                    showNotification('Image uploaded successfully');
                 };
                 reader.readAsDataURL(file);
             }
@@ -1577,6 +1896,7 @@ Instructions:
             uploadedImageBase64 = null;
             analyzeImageBtn.disabled = true;
             imageUploadInput.value = '';
+            showNotification('Image removed');
         });
         
         // Initialize the app
