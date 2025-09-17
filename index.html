@@ -1153,7 +1153,7 @@
     <div class="modal-overlay" id="delete-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Delete Note</h2>
+                <h2 class="modal-title">Delete Note 😢</h2>
                 <button class="btn btn-icon" id="close-delete-modal">
                     <i data-lucide="x"></i>
                 </button>
@@ -1647,7 +1647,7 @@
             // Construct the prompt based on the prompt type
             switch (promptType) {
                 case 'summarize_note':
-                    fullPrompt = `Summarize the following note into exactly 3 clear bullet points.
+                    fullPrompt = `Summarize the following note into exactly 3 clear bullet points. If the user has uploaded any image then summarise that too.
 
 NOTE CONTENT:
 "${noteContent || "No content provided"}"
@@ -1753,14 +1753,14 @@ Instructions:
                     aiResponseText.textContent = result.candidates[0].content.parts[0].text;
                     showNotification('AI response generated successfully', 'success');
                 } else {
-                    aiResponseText.textContent = "Sorry, I could not generate a response. The API returned an unexpected format.";
+                    aiResponseText.textContent = "Sorry, I could not generate a response. Please try again.";
                     console.error("Unexpected API response:", result);
                     showNotification('Failed to generate AI response', 'error');
                 }
             } catch (error) {
                 console.error("Error calling Gemini API:", error);
-                aiResponseText.textContent = "An error occurred. Please check the console for details and ensure your API key is valid.";
-                showNotification('Error connecting to AI service', 'error');
+                aiResponseText.textContent = "An error occurred. Please try again.";
+                showNotification('Error connecting to Exonova.', 'error');
             } finally {
                 aiLoadingIndicator.classList.add('hidden');
                 
