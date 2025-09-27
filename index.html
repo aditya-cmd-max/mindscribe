@@ -986,6 +986,45 @@
 </head>
 <body class="dark-theme">
     <div class="app-container">
+      
+     <!-- Splash Screen Start -->
+<div id="splash-screen-mindscribe" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:#000; display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:9999; color:#fff; font-family:'Product Sans', sans-serif;">
+  <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindsight Logo" style="width:140px; height:140px; margin-bottom:20px; opacity:0; animation: fadeIn 1s forwards;">
+  <h1 style="font-size:2.5em; letter-spacing:2px; margin:0; opacity:0; animation: fadeIn 1s 0.5s forwards;">Mindscribe</h1>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&display=swap');
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+#splash-screen-mindscribe {
+  animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; }
+}
+</style>
+
+<script>
+setTimeout(() => {
+  const splash = document.getElementById('splash-screen-mindscribe');
+  if(splash) splash.style.display = 'none';
+}, 2000);
+</script>
+<!-- Splash Screen End -->
+        
+        
+        
+        
+        
+        
         <!-- Header -->
         <header class="app-header">
             <div class="logo-container">
