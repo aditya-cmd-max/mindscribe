@@ -1269,6 +1269,70 @@
         .ai-image-feature {
             grid-column: 1 / -1;
         }
+
+        /* Link Styles */
+        .editor-link {
+            color: var(--md-primary);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .youtube-embed {
+            width: 100%;
+            max-width: 560px;
+            height: 315px;
+            border-radius: var(--md-radius-medium);
+            margin: var(--md-spacing-sm) 0;
+        }
+
+        .link-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--md-spacing-md);
+        }
+
+        .link-input {
+            padding: var(--md-spacing-sm) var(--md-spacing-md);
+            border-radius: var(--md-radius-medium);
+            border: 1px solid var(--md-outline-variant);
+            background: var(--md-surface);
+            color: var(--md-on-surface);
+            font-family: var(--md-font-family);
+        }
+
+        .link-input:focus {
+            outline: 2px solid var(--md-primary);
+            outline-offset: 2px;
+        }
+
+        .link-preview {
+            padding: var(--md-spacing-md);
+            background: var(--md-surface-variant);
+            border-radius: var(--md-radius-medium);
+            border: 1px solid var(--md-outline-variant);
+        }
+
+        .link-preview-title {
+            font-weight: 500;
+            margin-bottom: var(--md-spacing-xs);
+        }
+
+        .link-preview-url {
+            font-size: var(--md-font-size-label);
+            color: var(--md-on-surface-variant);
+            word-break: break-all;
+        }
+
+        /* Delete button styles */
+        .btn-danger {
+            background: var(--md-error) !important;
+            color: var(--md-on-error) !important;
+        }
+
+        .btn-danger:hover {
+            background: var(--md-error) !important;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body class="light-theme">
@@ -1298,10 +1362,7 @@
                     <span class="material-icons-round">dark_mode</span>
                     <span>Theme</span>
                 </button>
-                <button class="btn btn-text" id="export-btn">
-                    <span class="material-icons-round">download</span>
-                    <span>Export</span>
-                </button>
+                <!-- Removed export button from header -->
             </div>
         </header>
 
@@ -1343,6 +1404,9 @@
                         <button class="btn btn-icon" id="image-upload-btn">
                             <span class="material-icons-round">image</span>
                         </button>
+                        <button class="btn btn-icon" id="link-insert-btn">
+                            <span class="material-icons-round">link</span>
+                        </button>
                         <button class="btn btn-icon" id="delete-note-btn">
                             <span class="material-icons-round">delete</span>
                         </button>
@@ -1351,6 +1415,10 @@
                                 <span class="material-icons-round">more_vert</span>
                             </button>
                             <div class="more-actions-menu" id="more-actions-menu">
+                                <button class="menu-item" id="export-note-btn">
+                                    <span class="material-icons-round">download</span>
+                                    <span>Export Note</span>
+                                </button>
                                 <button class="menu-item" id="duplicate-note-btn">
                                     <span class="material-icons-round">content_copy</span>
                                     <span>Duplicate Note</span>
@@ -1590,6 +1658,55 @@
         </div>
     </div>
 
+    <!-- Link Insert Modal -->
+    <div class="modal-overlay" id="link-insert-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <span class="material-icons-round">link</span>
+                    Add Link to Note
+                </h2>
+                <button class="btn btn-icon" id="close-link-modal">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="link-input-container">
+                    <input type="url" class="link-input" id="link-url-input" placeholder="Paste URL here...">
+                    <input type="text" class="link-input" id="link-text-input" placeholder="Link text (optional)">
+                    
+                    <div class="link-preview" id="link-preview">
+                        <div class="link-preview-title">Preview</div>
+                        <div class="link-preview-url" id="link-preview-url">Link will appear here</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-text" id="cancel-link-insert">Cancel</button>
+                <button class="btn btn-filled" id="insert-link-btn">Insert Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Delete Note 😢</h2>
+                <button class="btn btn-icon" id="close-delete-modal">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this note? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-text" id="cancel-delete">Cancel</button>
+                <button class="btn btn-filled btn-danger" id="confirm-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Image Preview Modal -->
     <div class="modal-overlay" id="image-preview-modal">
         <div class="modal-content image-modal">
@@ -1659,7 +1776,6 @@
             const sendCustomPromptBtn = document.getElementById('send-custom-prompt');
             const applyAiSuggestionBtn = document.getElementById('apply-ai-suggestion');
             const cancelAiBtn = document.getElementById('cancel-ai');
-            const exportBtn = document.getElementById('export-btn');
             const exportModal = document.getElementById('export-modal');
             const closeExportModalBtn = document.getElementById('close-export-modal');
             const cancelExportBtn = document.getElementById('cancel-export');
@@ -1670,6 +1786,7 @@
             const formatBtns = document.querySelectorAll('.format-btn');
             const moreActionsBtn = document.getElementById('more-actions-btn');
             const moreActionsMenu = document.getElementById('more-actions-menu');
+            const exportNoteBtn = document.getElementById('export-note-btn');
             const duplicateNoteBtn = document.getElementById('duplicate-note-btn');
             const wordCountBtn = document.getElementById('word-count-btn');
             const addToFavoritesBtn = document.getElementById('add-to-favorites-btn');
@@ -1687,6 +1804,18 @@
             const imagePreviewModal = document.getElementById('image-preview-modal');
             const closeImagePreviewBtn = document.getElementById('close-image-preview');
             const previewedImage = document.getElementById('previewed-image');
+            const linkInsertBtn = document.getElementById('link-insert-btn');
+            const linkInsertModal = document.getElementById('link-insert-modal');
+            const closeLinkModalBtn = document.getElementById('close-link-modal');
+            const linkUrlInput = document.getElementById('link-url-input');
+            const linkTextInput = document.getElementById('link-text-input');
+            const linkPreviewUrl = document.getElementById('link-preview-url');
+            const cancelLinkInsertBtn = document.getElementById('cancel-link-insert');
+            const insertLinkBtn = document.getElementById('insert-link-btn');
+            const deleteModal = document.getElementById('delete-modal');
+            const closeDeleteModalBtn = document.getElementById('close-delete-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete');
+            const confirmDeleteBtn = document.getElementById('confirm-delete');
 
             // API Key
             const GEMINI_API_KEY = "AIzaSyB99Bow78KTvGN3GZkn0hs3-RMonLweLv0";
@@ -1788,6 +1917,12 @@
             moreActionsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 moreActionsMenu.classList.toggle('active');
+            });
+
+            // Export from three dots menu
+            exportNoteBtn.addEventListener('click', () => {
+                exportModal.classList.add('active');
+                moreActionsMenu.classList.remove('active');
             });
 
             // Underline menu functionality
@@ -1940,6 +2075,8 @@
                     
                     // Check if note has images
                     const hasImages = note.content && note.content.includes('<img');
+                    // Check if note has links
+                    const hasLinks = note.content && (note.content.includes('href=') || note.content.includes('youtube.com/embed'));
                     
                     noteEl.innerHTML = `
                         <div class="note-title">${note.title || 'Untitled'}</div>
@@ -1951,6 +2088,7 @@
                                     ''}
                                 ${note.tags && note.tags.length > 2 ? `<span class="tag">+${note.tags.length - 2}</span>` : ''}
                                 ${hasImages ? '<span class="tag"><span class="material-icons-round" style="font-size: 12px;">image</span></span>' : ''}
+                                ${hasLinks ? '<span class="tag"><span class="material-icons-round" style="font-size: 12px;">link</span></span>' : ''}
                             </div>
                             <div class="note-date">${formatDate(note.updatedAt)}</div>
                         </div>
@@ -1992,8 +2130,9 @@
                     noteEditorEl.innerHTML = note.content || '';
                     renderTags(note.tags || []);
                     
-                    // Add click handlers for images in the editor
+                    // Add click handlers for images and links in the editor
                     addImageClickHandlers();
+                    addLinkClickHandlers();
                     
                     // Remove selected class from all notes
                     document.querySelectorAll('.note-item').forEach(item => {
@@ -2325,7 +2464,7 @@
                 imagePreviewModal.classList.remove('active');
             });
 
-            // Insert images into note
+            // Insert images into note - COMPLETELY FIXED VERSION
             insertImagesBtn.addEventListener('click', () => {
                 if (uploadedImages.length === 0) {
                     showNotification('No images to insert', 'error');
@@ -2333,20 +2472,38 @@
                 }
                 
                 uploadedImages.forEach(image => {
+                    // Create image element
                     const imgElement = document.createElement('img');
                     imgElement.src = image.dataUrl;
                     imgElement.alt = image.name;
                     imgElement.className = 'editor-image';
+                    imgElement.style.maxWidth = '100%';
+                    imgElement.style.height = 'auto';
+                    imgElement.style.display = 'block';
+                    imgElement.style.margin = '10px 0';
                     
-                    // Insert image at cursor position
-                    if (window.getSelection) {
+                    // Add click handler for the new image
+                    imgElement.addEventListener('click', () => {
+                        previewImage(image.dataUrl);
+                    });
+                    
+                    // Insert at cursor position or at the end
+                    if (noteEditorEl.innerHTML === '') {
+                        // If editor is empty, just append
+                        noteEditorEl.appendChild(imgElement);
+                    } else {
+                        // If there's content, insert at cursor
                         const selection = window.getSelection();
                         if (selection.rangeCount > 0) {
                             const range = selection.getRangeAt(0);
                             range.insertNode(imgElement);
                             
-                            // Add a space after the image
-                            range.setStartAfter(imgElement);
+                            // Add a line break after the image
+                            const br = document.createElement('br');
+                            range.insertNode(br);
+                            
+                            // Set cursor after the image
+                            range.setStartAfter(br);
                             range.collapse(true);
                             selection.removeAllRanges();
                             selection.addRange(range);
@@ -2356,11 +2513,6 @@
                             noteEditorEl.appendChild(document.createElement('br'));
                         }
                     }
-                    
-                    // Add click handler for the new image
-                    imgElement.addEventListener('click', () => {
-                        previewImage(image.dataUrl);
-                    });
                 });
                 
                 // Save the note with images
@@ -2383,7 +2535,177 @@
                 });
             }
 
-            // Call Gemini API - FIXED VERSION
+            // Link Insert Functionality
+            linkInsertBtn.addEventListener('click', () => {
+                linkInsertModal.classList.add('active');
+                linkUrlInput.focus();
+            });
+
+            closeLinkModalBtn.addEventListener('click', () => {
+                linkInsertModal.classList.remove('active');
+                clearLinkInputs();
+            });
+
+            cancelLinkInsertBtn.addEventListener('click', () => {
+                linkInsertModal.classList.remove('active');
+                clearLinkInputs();
+            });
+
+            // Update link preview
+            linkUrlInput.addEventListener('input', () => {
+                const url = linkUrlInput.value.trim();
+                if (url) {
+                    linkPreviewUrl.textContent = url;
+                } else {
+                    linkPreviewUrl.textContent = 'Link will appear here';
+                }
+            });
+
+            // Insert link into note - COMPLETELY FIXED VERSION
+            insertLinkBtn.addEventListener('click', () => {
+                const url = linkUrlInput.value.trim();
+                const text = linkTextInput.value.trim() || url;
+                
+                if (!url) {
+                    showNotification('Please enter a URL', 'error');
+                    return;
+                }
+                
+                // Validate URL
+                try {
+                    new URL(url);
+                } catch (e) {
+                    showNotification('Please enter a valid URL', 'error');
+                    return;
+                }
+                
+                let linkElement;
+                
+                // Check if it's a YouTube URL
+                if (isYouTubeUrl(url)) {
+                    const videoId = getYouTubeVideoId(url);
+                    if (videoId) {
+                        // Create YouTube embed
+                        linkElement = document.createElement('div');
+                        linkElement.innerHTML = `
+                            <iframe 
+                                src="https://www.youtube.com/embed/${videoId}" 
+                                class="youtube-embed"
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                            <br>
+                        `;
+                    } else {
+                        // Create regular link for invalid YouTube URL
+                        linkElement = document.createElement('a');
+                        linkElement.href = url;
+                        linkElement.textContent = text;
+                        linkElement.className = 'editor-link';
+                        linkElement.target = '_blank';
+                    }
+                } else {
+                    // Create regular link
+                    linkElement = document.createElement('a');
+                    linkElement.href = url;
+                    linkElement.textContent = text;
+                    linkElement.className = 'editor-link';
+                    linkElement.target = '_blank';
+                }
+                
+                // Insert at cursor position or at the end
+                if (noteEditorEl.innerHTML === '') {
+                    // If editor is empty, just append
+                    noteEditorEl.appendChild(linkElement);
+                } else {
+                    // If there's content, insert at cursor
+                    const selection = window.getSelection();
+                    if (selection.rangeCount > 0) {
+                        const range = selection.getRangeAt(0);
+                        range.insertNode(linkElement);
+                        
+                        // Add a space after the link
+                        const space = document.createTextNode(' ');
+                        range.insertNode(space);
+                        
+                        // Set cursor after the link
+                        range.setStartAfter(space);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    } else {
+                        // If no selection, append to the end
+                        noteEditorEl.appendChild(linkElement);
+                        noteEditorEl.appendChild(document.createTextNode(' '));
+                    }
+                }
+                
+                // Save the note with link
+                saveNoteChanges();
+                
+                // Close the modal and clear inputs
+                linkInsertModal.classList.remove('active');
+                clearLinkInputs();
+                
+                showNotification('Link inserted into note');
+            });
+
+            // Check if URL is a YouTube URL
+            function isYouTubeUrl(url) {
+                return url.includes('youtube.com') || url.includes('youtu.be');
+            }
+
+            // Extract YouTube video ID from URL
+            function getYouTubeVideoId(url) {
+                const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[7].length === 11) ? match[7] : false;
+            }
+
+            // Clear link inputs
+            function clearLinkInputs() {
+                linkUrlInput.value = '';
+                linkTextInput.value = '';
+                linkPreviewUrl.textContent = 'Link will appear here';
+            }
+
+            // Add click handlers for links in the editor
+            function addLinkClickHandlers() {
+                const links = noteEditorEl.querySelectorAll('a');
+                links.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        if (link.target === '_blank') {
+                            e.preventDefault();
+                            window.open(link.href, '_blank');
+                        }
+                    });
+                });
+            }
+
+            // Delete Confirmation Modal Functionality
+            deleteNoteBtn.addEventListener('click', () => {
+                if (!currentNoteId) {
+                    showNotification('No note selected', 'error');
+                    return;
+                }
+                deleteModal.classList.add('active');
+            });
+
+            closeDeleteModalBtn.addEventListener('click', () => {
+                deleteModal.classList.remove('active');
+            });
+
+            cancelDeleteBtn.addEventListener('click', () => {
+                deleteModal.classList.remove('active');
+            });
+
+            confirmDeleteBtn.addEventListener('click', () => {
+                deleteCurrentNote();
+                deleteModal.classList.remove('active');
+            });
+
+            // Call Gemini API - FIXED VERSION with image analysis
             async function callGeminiAPI(promptType, customPrompt) {
                 const note = notes.find(n => n.id === currentNoteId);
                 if (!note) {
@@ -2654,12 +2976,6 @@ Instructions:
             // Event Listeners
             newNoteBtn.addEventListener('click', createNewNote);
             
-            deleteNoteBtn.addEventListener('click', () => {
-                if (currentNoteId && confirm('Are you sure you want to delete this note?')) {
-                    deleteCurrentNote();
-                }
-            });
-            
             noteTitleEl.addEventListener('input', saveNoteChanges);
             noteEditorEl.addEventListener('input', saveNoteChanges);
             
@@ -2751,10 +3067,6 @@ Instructions:
             applyAiSuggestionBtn.addEventListener('click', applyAiSuggestion);
             
             // Export
-            exportBtn.addEventListener('click', () => {
-                exportModal.classList.add('active');
-            });
-            
             closeExportModalBtn.addEventListener('click', () => {
                 exportModal.classList.remove('active');
             });
