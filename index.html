@@ -17,7 +17,7 @@
     <link rel="icon" type="image/x-icon" href="https://aditya-cmd-max.github.io/mindscribe/logo.png">
     
     <style>
-        /* Material Design 3 Color System */
+       /* Material Design 3 Color System */
         :root {
             /* Primary Colors */
             --md-primary: #6750A4;
@@ -1362,7 +1362,6 @@
                     <span class="material-icons-round">dark_mode</span>
                     <span>Theme</span>
                 </button>
-                <!-- Removed export button from header -->
             </div>
         </header>
 
@@ -2322,7 +2321,7 @@
                 noteEditorEl.focus();
             }
 
-            // Image Upload Functionality
+            // Image Upload Functionality - FIXED VERSION
             imageUploadBtn.addEventListener('click', () => {
                 imageUploadModal.classList.add('active');
             });
@@ -2471,6 +2470,15 @@
                     return;
                 }
                 
+                // Ensure we have a note selected
+                if (!currentNoteId) {
+                    showNotification('Please create or select a note first', 'error');
+                    return;
+                }
+                
+                // Focus on editor to ensure we can insert content
+                noteEditorEl.focus();
+                
                 uploadedImages.forEach(image => {
                     // Create image element
                     const imgElement = document.createElement('img');
@@ -2488,30 +2496,24 @@
                     });
                     
                     // Insert at cursor position or at the end
-                    if (noteEditorEl.innerHTML === '') {
-                        // If editor is empty, just append
-                        noteEditorEl.appendChild(imgElement);
+                    const selection = window.getSelection();
+                    if (selection.rangeCount > 0) {
+                        const range = selection.getRangeAt(0);
+                        range.insertNode(imgElement);
+                        
+                        // Add a line break after the image
+                        const br = document.createElement('br');
+                        range.insertNode(br);
+                        
+                        // Set cursor after the image
+                        range.setStartAfter(br);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
                     } else {
-                        // If there's content, insert at cursor
-                        const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                            const range = selection.getRangeAt(0);
-                            range.insertNode(imgElement);
-                            
-                            // Add a line break after the image
-                            const br = document.createElement('br');
-                            range.insertNode(br);
-                            
-                            // Set cursor after the image
-                            range.setStartAfter(br);
-                            range.collapse(true);
-                            selection.removeAllRanges();
-                            selection.addRange(range);
-                        } else {
-                            // If no selection, append to the end
-                            noteEditorEl.appendChild(imgElement);
-                            noteEditorEl.appendChild(document.createElement('br'));
-                        }
+                        // If no selection, append to the end
+                        noteEditorEl.appendChild(imgElement);
+                        noteEditorEl.appendChild(document.createElement('br'));
                     }
                 });
                 
@@ -2529,13 +2531,18 @@
             function addImageClickHandlers() {
                 const images = noteEditorEl.querySelectorAll('img');
                 images.forEach(img => {
-                    img.addEventListener('click', () => {
-                        previewImage(img.src);
-                    });
+                    // Remove existing handlers to avoid duplicates
+                    img.removeEventListener('click', handleImageClick);
+                    // Add new handler
+                    img.addEventListener('click', handleImageClick);
                 });
             }
+            
+            function handleImageClick(e) {
+                previewImage(e.target.src);
+            }
 
-            // Link Insert Functionality
+            // Link Insert Functionality - FIXED VERSION
             linkInsertBtn.addEventListener('click', () => {
                 linkInsertModal.classList.add('active');
                 linkUrlInput.focus();
@@ -2579,6 +2586,15 @@
                     return;
                 }
                 
+                // Ensure we have a note selected
+                if (!currentNoteId) {
+                    showNotification('Please create or select a note first', 'error');
+                    return;
+                }
+                
+                // Focus on editor
+                noteEditorEl.focus();
+                
                 let linkElement;
                 
                 // Check if it's a YouTube URL
@@ -2615,30 +2631,24 @@
                 }
                 
                 // Insert at cursor position or at the end
-                if (noteEditorEl.innerHTML === '') {
-                    // If editor is empty, just append
-                    noteEditorEl.appendChild(linkElement);
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    range.insertNode(linkElement);
+                    
+                    // Add a space after the link
+                    const space = document.createTextNode(' ');
+                    range.insertNode(space);
+                    
+                    // Set cursor after the link
+                    range.setStartAfter(space);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
                 } else {
-                    // If there's content, insert at cursor
-                    const selection = window.getSelection();
-                    if (selection.rangeCount > 0) {
-                        const range = selection.getRangeAt(0);
-                        range.insertNode(linkElement);
-                        
-                        // Add a space after the link
-                        const space = document.createTextNode(' ');
-                        range.insertNode(space);
-                        
-                        // Set cursor after the link
-                        range.setStartAfter(space);
-                        range.collapse(true);
-                        selection.removeAllRanges();
-                        selection.addRange(range);
-                    } else {
-                        // If no selection, append to the end
-                        noteEditorEl.appendChild(linkElement);
-                        noteEditorEl.appendChild(document.createTextNode(' '));
-                    }
+                    // If no selection, append to the end
+                    noteEditorEl.appendChild(linkElement);
+                    noteEditorEl.appendChild(document.createTextNode(' '));
                 }
                 
                 // Save the note with link
@@ -2674,13 +2684,18 @@
             function addLinkClickHandlers() {
                 const links = noteEditorEl.querySelectorAll('a');
                 links.forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        if (link.target === '_blank') {
-                            e.preventDefault();
-                            window.open(link.href, '_blank');
-                        }
-                    });
+                    // Remove existing handlers to avoid duplicates
+                    link.removeEventListener('click', handleLinkClick);
+                    // Add new handler
+                    link.addEventListener('click', handleLinkClick);
                 });
+            }
+            
+            function handleLinkClick(e) {
+                if (e.target.target === '_blank') {
+                    e.preventDefault();
+                    window.open(e.target.href, '_blank');
+                }
             }
 
             // Delete Confirmation Modal Functionality
@@ -2734,6 +2749,18 @@
                     }
                 });
                 
+                // Extract links from note content
+                const links = [];
+                const linkElements = tempDiv.querySelectorAll('a');
+                linkElements.forEach(link => {
+                    if (link.href) {
+                        links.push({
+                            text: link.textContent,
+                            url: link.href
+                        });
+                    }
+                });
+                
                 // Construct the prompt based on the prompt type
                 switch (promptType) {
                     case 'summarize_note':
@@ -2742,27 +2769,31 @@
 NOTE CONTENT:
 "${note.content || "No content provided"}"
 
+${links.length > 0 ? `LINKS IN NOTE:\n${links.map(link => `- ${link.text}: ${link.url}`).join('\n')}\n\n` : ''}
+
 Instructions:
 1. Use plain text only (no **, *, ##, or Markdown).
 2. Format as 3 bullet points with bullet point(●).
 3. Each point should be short and focused.
 4. Do not add extra commentary before or after the summary.
+5. ${links.length > 0 ? 'Include relevant information from the links in your summary.' : ''}
 `;
                         break;
                     case 'action_items':
-                        fullPrompt = `Generate a numbered list of action items from the following note.\n\nNOTE CONTENT:\n"${note.content}"`;
+                        fullPrompt = `Generate a numbered list of action items from the following note.\n\nNOTE CONTENT:\n"${note.content}"\n\n${links.length > 0 ? `LINKS IN NOTE:\n${links.map(link => `- ${link.text}: ${link.url}`).join('\n')}\n\n` : ''}`;
                         break;
                     case 'continue_writing':
-                        fullPrompt = `Continue writing from the last sentence of this note. Provide a coherent and natural continuation of the text.\n\nNOTE CONTENT:\n"${note.content}"`;
+                        fullPrompt = `Continue writing from the last sentence of this note. Provide a coherent and natural continuation of the text.\n\nNOTE CONTENT:\n"${note.content}"\n\n${links.length > 0 ? `LINKS IN NOTE:\n${links.map(link => `- ${link.text}: ${link.url}`).join('\n')}\n\n` : ''}`;
                         break;
                     case 'brainstorm':
-                        fullPrompt = `Based on the title "${note.title}" and the following note content, provide a short list of 5-7 related ideas or concepts.\n\nNOTE CONTENT:\n"${note.content}"`;
+                        fullPrompt = `Based on the title "${note.title}" and the following note content, provide a short list of 5-7 related ideas or concepts.\n\nNOTE CONTENT:\n"${note.content}"\n\n${links.length > 0 ? `LINKS IN NOTE:\n${links.map(link => `- ${link.text}: ${link.url}`).join('\n')}\n\n` : ''}`;
                         break;
                     case 'explain':
                         fullPrompt = `Explain the concepts in this note in more detail:
 
 NOTE TITLE: "${note.title || 'Untitled'}"
 NOTE CONTENT: "${note.content || 'No content'}"
+${links.length > 0 ? `LINKS IN NOTE:\n${links.map(link => `- ${link.text}: ${link.url}`).join('\n')}\n\n` : ''}
 
 Please provide a detailed explanation of the key concepts mentioned in this note.`;
                         break;
@@ -2771,6 +2802,7 @@ Please provide a detailed explanation of the key concepts mentioned in this note
 
 NOTE TITLE: "${note.title || 'Untitled'}"
 NOTE CONTENT: "${note.content || 'No content'}"
+${links.length > 0 ? `LINKS IN NOTE:\n${links.map(link => `- ${link.text}: ${link.url}`).join('\n')}\n\n` : ''}
 
 Please provide an accurate translation.`;
                         break;
@@ -2785,6 +2817,7 @@ Please provide an accurate translation.`;
 
 NOTE TITLE: "${note.title || 'Untitled'}"
 NOTE CONTENT: "${note.content ? note.content.replace(/<img[^>]*>/g, '[IMAGE]') : 'No content'}"
+${links.length > 0 ? `LINKS IN NOTE:\n${links.map(link => `- ${link.text}: ${link.url}`).join('\n')}\n\n` : ''}
 
 Please describe what you see in the images and how they relate to the note content.`;
                         break;
@@ -2796,12 +2829,14 @@ The user asked: "${customPrompt}"
 Context of the note:
 - Title: ${note.title || "Untitled"}
 - Content: ${note.content || "Empty note"}
+${links.length > 0 ? `- Links: ${links.map(link => `${link.text} (${link.url})`).join(', ')}\n` : ''}
 
 Instructions:
 1. DO NOT use Markdown symbols like **, *, or ##.
 2. Use plain text only.
 3. If you need emphasis, use UPPERCASE words or dashes (-) instead.
 4. Keep your answer clear and concise.
+5. Consider any links in the note when formulating your response.
 `;
                         break;
                 }
