@@ -1333,6 +1333,114 @@
             background: var(--md-error) !important;
             opacity: 0.9;
         }
+
+        /* Navigation Tabs */
+.nav-tabs {
+    display: flex;
+    padding: var(--md-spacing-sm) var(--md-spacing-lg);
+    border-bottom: 1px solid var(--md-outline-variant);
+    background: var(--md-surface);
+    gap: var(--md-spacing-xs);
+    transition: var(--md-transition);
+}
+
+.nav-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--md-spacing-xs);
+    padding: var(--md-spacing-sm) var(--md-spacing-md);
+    border: none;
+    background: var(--md-surface-variant);
+    color: var(--md-on-surface-variant);
+    border-radius: var(--md-radius-medium);
+    cursor: pointer;
+    transition: var(--md-transition-fast);
+    font-family: inherit;
+    font-size: var(--md-font-size-label);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    min-height: 36px;
+}
+
+.nav-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--md-primary);
+    opacity: 0;
+    transition: var(--md-transition-fast);
+}
+
+.nav-tab:hover {
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+    transform: translateY(-1px);
+}
+
+.nav-tab.active {
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    box-shadow: var(--md-elevation-1);
+}
+
+.nav-tab.active::before {
+    opacity: 0;
+}
+
+.nav-tab-text {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Adjust for collapsed sidebar */
+.sidebar.collapsed .nav-tabs {
+    padding: var(--md-spacing-sm);
+    flex-direction: column;
+    gap: var(--md-spacing-xs);
+}
+
+.sidebar.collapsed .nav-tab {
+    min-height: 32px;
+    padding: var(--md-spacing-xs);
+}
+
+.sidebar.collapsed .nav-tab-text {
+    display: none;
+}
+
+.sidebar.collapsed .nav-tab .material-icons-round {
+    font-size: 16px;
+}
+
+/* Empty state styling */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--md-spacing-xl);
+    text-align: center;
+    color: var(--md-on-surface-variant);
+    flex: 1;
+}
+
+.empty-state .material-icons-round {
+    font-size: 48px;
+    margin-bottom: var(--md-spacing-md);
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin: 0;
+    line-height: 1.5;
+}
+        
     </style>
 </head>
 <body class="light-theme">
