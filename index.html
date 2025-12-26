@@ -1,68 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YOUR_ANALYTICS_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YOUR_ANALYTICS_ID');
+    </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mindscribe - AI-Powered Learning Notebook</title>
+    <meta name="description" content="Mindscribe is an AI-powered notebook that helps you learn faster, remember more, and organize your thoughts effectively. Experience intelligent note-taking with AI assistance.">
+    <meta name="keywords" content="Mindscribe, AI notebook, note-taking, learning tool, AI assistant, Reverbit, Aditya Jha, study tool, productivity">
+    <meta name="author" content="Aditya Jha">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script> 
+    <script src="https://aditya-cmd-max.github.io/js/auth.js"></script>
     
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="https://aditya-cmd-max.github.io/mindscribe/logo.png">
+    <link rel="apple-touch-icon" href="https://aditya-cmd-max.github.io/mindscribe/logo.png">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aditya-cmd-max.github.io/mindscribe/" />
+    <meta property="og:title" content="Mindscribe | AI-Powered Learning Notebook" />
+    <meta property="og:description" content="Mindscribe is an AI-powered notebook that helps you learn faster, remember more, and organize your thoughts effectively." />
+    <meta property="og:image" content="https://aditya-cmd-max.github.io/mindscribe/logo.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://aditya-cmd-max.github.io/mindscribe/" />
+    <meta property="twitter:title" content="Mindscribe | AI-Powered Learning Notebook" />
+    <meta property="twitter:description" content="Mindscribe is an AI-powered notebook that helps you learn faster, remember more, and organize your thoughts effectively." />
+    <meta property="twitter:image" content="https://aditya-cmd-max.github.io/mindscribe/logo.png" />
+    
+    <!-- Canonical -->
+    <link rel="canonical" href="https://aditya-cmd-max.github.io/mindscribe/">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Mindscribe",
+        "operatingSystem": "Web",
+        "applicationCategory": "Productivity",
+        "creator": {
+            "@type": "Person",
+            "name": "Aditya Jha"
+        },
+        "description": "AI-powered notebook that helps you learn faster, remember more, and organize your thoughts effectively.",
+        "image": "https://aditya-cmd-max.github.io/mindscribe/logo.png",
+        "url": "https://aditya-cmd-max.github.io/mindscribe/"
+    }
+    </script>
     
     <style>
-        /* Material Design 3 Color System */
+        /* Material Design 3 Color System with Enhanced Blue/Green */
         :root {
-            /* Primary Colors */
-            --md-primary: #6750A4;
+            /* Primary Colors - Blue Theme */
+            --md-primary: #1a73e8;
+            --md-primary-light: #4285f4;
+            --md-primary-dark: #0d47a1;
             --md-on-primary: #FFFFFF;
-            --md-primary-container: #EADDFF;
-            --md-on-primary-container: #21005D;
+            --md-primary-container: #d2e3fc;
+            --md-on-primary-container: #001d3d;
             
-            /* Secondary Colors */
-            --md-secondary: #625B71;
+            /* Secondary Colors - Green Theme */
+            --md-secondary: #0d8a72;
+            --md-secondary-light: #34a853;
+            --md-secondary-dark: #0a5c42;
             --md-on-secondary: #FFFFFF;
-            --md-secondary-container: #E8DEF8;
-            --md-on-secondary-container: #1D192B;
-            
-            /* Tertiary Colors */
-            --md-tertiary: #7D5260;
-            --md-on-tertiary: #FFFFFF;
-            --md-tertiary-container: #FFD8E4;
-            --md-on-tertiary-container: #31111D;
+            --md-secondary-container: #b8f2e6;
+            --md-on-secondary-container: #00201a;
             
             /* Surface Colors */
-            --md-surface: #FEF7FF;
-            --md-on-surface: #1C1B1F;
-            --md-surface-variant: #E7E0EC;
-            --md-on-surface-variant: #49454F;
+            --md-surface: #FFFFFF;
+            --md-on-surface: #202124;
+            --md-surface-variant: #F8F9FA;
+            --md-on-surface-variant: #5f6368;
             
             /* Background Colors */
-            --md-background: #FEF7FF;
-            --md-on-background: #1C1B1F;
-            
-            /* Error Colors */
-            --md-error: #B3261E;
-            --md-on-error: #FFFFFF;
-            --md-error-container: #F9DEDC;
-            --md-on-error-container: #410E0B;
+            --md-background: #FFFFFF;
+            --md-on-background: #202124;
             
             /* Outline Colors */
-            --md-outline: #79747E;
-            --md-outline-variant: #C4C7C5;
+            --md-outline: #DADCE0;
+            --md-outline-variant: #E8EAED;
             
             /* Shadow Elevations */
-            --md-elevation-1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-            --md-elevation-2: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
-            --md-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
-            --md-elevation-4: 0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px rgba(0, 0, 0, 0.3);
-            --md-elevation-5: 0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px rgba(0, 0, 0, 0.3);
+            --md-elevation-1: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+            --md-elevation-2: 0 1px 2px rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
+            --md-elevation-3: 0 1px 3px 1px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.3);
+            --md-elevation-4: 0 4px 12px rgba(0, 0, 0, 0.1);
             
             /* Animation */
             --md-transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
@@ -73,6 +128,7 @@
             --md-radius-medium: 12px;
             --md-radius-large: 16px;
             --md-radius-extra-large: 28px;
+            --md-radius-pill: 9999px;
             
             /* Spacing */
             --md-spacing-xs: 4px;
@@ -80,28 +136,172 @@
             --md-spacing-md: 16px;
             --md-spacing-lg: 24px;
             --md-spacing-xl: 32px;
+            --md-spacing-xxl: 48px;
             
             /* Typography */
-            --md-font-family: 'Product Sans', sans-serif;
-            --md-font-size-display: 3.5625rem;
-            --md-font-size-headline: 2rem;
-            --md-font-size-title: 1.375rem;
-            --md-font-size-body: 1rem;
-            --md-font-size-label: 0.875rem;
+            --md-font-logo: 'Playfair Display', serif;
+            --md-font-heading: 'Inter', sans-serif;
+            --md-font-body: 'Lora', serif;
         }
 
         /* Dark Theme */
         .dark-theme {
-            --md-surface: #141218;
-            --md-on-surface: #E6E1E5;
-            --md-surface-variant: #49454F;
-            --md-on-surface-variant: #CAC4D0;
-            --md-background: #141218;
-            --md-on-background: #E6E1E5;
-            --md-primary-container: #4F378B;
-            --md-on-primary-container: #EADDFF;
-            --md-secondary-container: #4A4458;
-            --md-on-secondary-container: #E8DEF8;
+            --md-surface: #202124;
+            --md-on-surface: #FFFFFF;
+            --md-surface-variant: #303134;
+            --md-on-surface-variant: #E8EAED;
+            --md-background: #202124;
+            --md-on-background: #FFFFFF;
+            --md-primary: #8ab4f8;
+            --md-primary-light: #aecbfa;
+            --md-primary-container: #174ea6;
+            --md-on-primary-container: #E8EAED;
+            --md-secondary: #81c995;
+            --md-secondary-light: #a8dab5;
+            --md-secondary-container: #0d8a72;
+            --md-on-secondary-container: #E8EAED;
+            --md-outline: #3C4043;
+            --md-outline-variant: #5F6368;
+            --md-elevation-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
+            --md-elevation-2: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+            --md-elevation-3: 0 1px 3px 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Show sign in button when user is signed out */
+        body:not(.user-signed-in) #signInButton {
+            display: inline-flex !important;
+        }
+
+        body:not(.user-signed-in) #mobileSignInLink {
+            display: flex !important;
+        }
+
+        /* Hide sign in button when user is signed in */
+        body.user-signed-in #signInButton {
+            display: none !important;
+        }
+
+        body.user-signed-in #mobileSignInLink {
+            display: none !important;
+        }
+
+        /* Profile Avatar Button */
+        .profile-avatar-button {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50% !important;
+            border: 2px solid var(--md-primary, #1a73e8) !important;
+            cursor: pointer !important;
+            background: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+            transition: transform 0.2s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar-button:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 2px 8px rgba(var(--md-primary-rgb, 26, 115, 232), 0.3) !important;
+        }
+
+        .profile-avatar-img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            display: block !important;
+        }
+
+        /* Mobile Avatar Container */
+        .mobile-avatar-container {
+            display: none;
+            flex-direction: column;
+            gap: var(--md-spacing-sm);
+            padding: var(--md-spacing-md) var(--md-spacing-lg);
+            border-bottom: 1px solid var(--md-outline);
+            margin-bottom: var(--md-spacing-md);
+        }
+
+        body.user-signed-in .mobile-avatar-container {
+            display: flex;
+        }
+
+        .mobile-user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--md-spacing-md);
+            padding: var(--md-spacing-sm);
+            background: var(--md-surface-variant);
+            border-radius: var(--md-radius-medium);
+            margin-bottom: var(--md-spacing-md);
+        }
+
+        .mobile-user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--md-primary);
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--md-on-primary);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .mobile-user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mobile-user-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .mobile-user-name {
+            font-weight: 600;
+            color: var(--md-on-surface);
+            margin-bottom: 2px;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile-user-email {
+            font-size: 0.8rem;
+            color: var(--md-on-surface-variant);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile-logout-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--md-spacing-md);
+            background: none;
+            border: none;
+            color: var(--md-error);
+            padding: var(--md-spacing-md) var(--md-spacing-lg);
+            border-radius: var(--md-radius-medium);
+            cursor: pointer;
+            font-family: var(--md-font-heading);
+            font-size: 1rem;
+            width: 100%;
+            transition: background-color 0.2s ease;
+            margin-top: var(--md-spacing-sm);
+        }
+
+        .mobile-logout-btn:hover {
+            background: var(--md-surface-variant);
         }
 
         /* Base Styles */
@@ -116,95 +316,341 @@
         }
 
         body {
-            font-family: var(--md-font-family);
+            font-family: var(--md-font-body);
             background-color: var(--md-background);
             color: var(--md-on-surface);
-            line-height: 1.5;
+            line-height: 1.6;
             overflow-x: hidden;
             transition: var(--md-transition);
         }
 
-        /* Header */
-        .landing-header {
+        /* Modern Floating Pill Navbar */
+        .floating-navbar {
+            position: fixed;
+            top: var(--md-spacing-lg);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--md-radius-pill);
+            padding: var(--md-spacing-sm) var(--md-spacing-lg);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: var(--md-spacing-md) var(--md-spacing-lg);
-            background: var(--md-surface);
-            border-bottom: 1px solid var(--md-outline-variant);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
+            gap: var(--md-spacing-md);
+            z-index: 1000;
+            box-shadow: var(--md-elevation-4);
+            transition: var(--md-transition);
+            max-width: 1200px;
+            width: 90%;
         }
 
-        .logo-container {
+        .dark-theme .floating-navbar {
+            background: rgba(32, 33, 36, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-brand {
             display: flex;
             align-items: center;
-            gap: var(--md-spacing-md);
+            gap: var(--md-spacing-sm);
+            text-decoration: none;
+            flex-shrink: 0;
         }
 
-        .logo {
-            width: 40px;
-            height: 40px;
+        .nav-logo {
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--md-primary);
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
             border-radius: var(--md-radius-medium);
             color: var(--md-on-primary);
+            font-weight: 700;
+            transition: var(--md-transition);
+            flex-shrink: 0;
             overflow: hidden;
         }
 
-        .logo img {
-            width: 100%;
-            height: 100%;
+        .nav-logo img {
+            width: 24px;
+            height: 24px;
             object-fit: contain;
         }
 
-        .app-name {
-            font-size: var(--md-font-size-title);
-            font-weight: 500;
-            color: var(--md-on-surface);
-            letter-spacing: -0.25px;
+        .nav-logo:hover {
+            transform: rotate(15deg) scale(1.1);
         }
 
-        .nav-links {
+        .nav-name {
+            font-family: var(--md-font-logo);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--md-on-surface);
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        /* Desktop Navigation */
+        .desktop-nav {
             display: flex;
             align-items: center;
-            gap: var(--md-spacing-lg);
+            gap: var(--md-spacing-md);
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            flex-grow: 1;
         }
 
         .nav-link {
             color: var(--md-on-surface);
             text-decoration: none;
-            font-weight: 500;
+            font-family: var(--md-font-heading);
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: var(--md-spacing-sm) var(--md-spacing-md);
+            border-radius: var(--md-radius-pill);
             transition: var(--md-transition);
             position: relative;
-            padding: var(--md-spacing-sm) 0;
+            white-space: nowrap;
         }
 
-        .nav-link::after {
+        .nav-link:hover {
+            background: var(--md-surface-variant);
+            color: var(--md-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .nav-link.active {
+            color: var(--md-primary);
+            font-weight: 700;
+            background: var(--md-primary-container);
+        }
+
+        .nav-link.active::after {
             content: '';
             position: absolute;
-            bottom: 0;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--md-primary), var(--md-secondary));
+            border-radius: var(--md-radius-pill);
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--md-on-surface);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--md-transition);
+            flex-shrink: 0;
+            background: var(--md-surface-variant);
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--md-on-surface);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            transition: var(--md-transition);
+            flex-shrink: 0;
+        }
+
+        .mobile-menu-btn:hover {
+            background: var(--md-surface-variant);
+            transform: rotate(90deg);
+        }
+
+        /* Mobile Navigation */
+        .mobile-nav {
+            position: fixed;
+            top: 0;
             left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--md-primary);
+            width: 100%;
+            height: 100%;
+            background: var(--md-surface);
+            z-index: 999;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: var(--md-spacing-xxl) var(--md-spacing-xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--md-spacing-md);
+            overflow-y: auto;
+        }
+
+        .mobile-nav.active {
+            transform: translateX(0);
+        }
+
+        .mobile-nav-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--md-spacing-xl);
+            padding-bottom: var(--md-spacing-lg);
+            border-bottom: 1px solid var(--md-outline);
+        }
+
+        .mobile-nav-close {
+            background: transparent;
+            border: none;
+            color: var(--md-on-surface);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: var(--md-transition);
         }
 
-        .nav-link:hover::after {
-            width: 100%;
+        .mobile-nav-close:hover {
+            background: var(--md-surface-variant);
+            transform: rotate(90deg);
         }
 
-        .header-actions {
+        .mobile-nav-link {
+            color: var(--md-on-surface);
+            text-decoration: none;
+            font-family: var(--md-font-heading);
+            font-size: 1.25rem;
+            font-weight: 500;
+            padding: var(--md-spacing-md) var(--md-spacing-lg);
+            border-radius: var(--md-radius-medium);
+            transition: var(--md-transition);
             display: flex;
             align-items: center;
-            gap: var(--md-spacing-sm);
+            gap: var(--md-spacing-md);
+        }
+
+        .mobile-nav-link:hover,
+        .mobile-nav-link.active {
+            background: var(--md-surface-variant);
+            color: var(--md-primary);
+            transform: translateX(8px);
+        }
+
+        .mobile-nav-link i {
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Mobile Theme Toggle */
+        .mobile-theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--md-spacing-md) var(--md-spacing-lg);
+            background: var(--md-surface-variant);
+            border-radius: var(--md-radius-medium);
+            margin-top: var(--md-spacing-xl);
+        }
+
+        .mobile-theme-toggle span {
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+
+        .mobile-theme-btn {
+            background: transparent;
+            border: none;
+            color: var(--md-on-surface);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 160px var(--md-spacing-xl) var(--md-spacing-xl);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-family: var(--md-font-logo);
+            font-size: clamp(3.5rem, 8vw, 6rem);
+            font-weight: 800;
+            margin-bottom: var(--md-spacing-lg);
+            background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-secondary) 50%, var(--md-primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-family: var(--md-font-heading);
+            font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+            color: var(--md-on-surface-variant);
+            margin-bottom: var(--md-spacing-xl);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: var(--md-spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Interactive typing effect */
+        .typing-text {
+            display: inline-block;
+            position: relative;
+        }
+
+        .typing-text::after {
+            content: '|';
+            position: absolute;
+            right: -8px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
         }
 
         /* Buttons */
@@ -213,53 +659,27 @@
             align-items: center;
             justify-content: center;
             gap: var(--md-spacing-sm);
-            padding: var(--md-spacing-sm) var(--md-spacing-md);
-            border-radius: var(--md-radius-extra-large);
+            padding: var(--md-spacing-md) var(--md-spacing-xl);
+            border-radius: var(--md-radius-pill);
             border: none;
-            font-family: inherit;
-            font-size: var(--md-font-size-label);
+            font-family: var(--md-font-heading);
+            font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            transition: var(--md-transition-fast);
+            transition: var(--md-transition);
             text-decoration: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: currentColor;
-            opacity: 0;
-            transition: var(--md-transition-fast);
-        }
-
-        .btn:hover::before {
-            opacity: 0.08;
-        }
-
-        .btn:active::before {
-            opacity: 0.12;
+            min-height: 48px;
         }
 
         .btn-filled {
-            background: var(--md-primary);
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
             color: var(--md-on-primary);
-            box-shadow: var(--md-elevation-1);
+            box-shadow: var(--md-elevation-2);
         }
 
         .btn-filled:hover {
-            box-shadow: var(--md-elevation-2);
-            transform: translateY(-2px);
-        }
-
-        .btn-tonal {
-            background: var(--md-secondary-container);
-            color: var(--md-on-secondary-container);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: var(--md-elevation-3);
         }
 
         .btn-outlined {
@@ -268,189 +688,79 @@
             border: 1px solid var(--md-outline);
         }
 
-        .btn-text {
-            background: transparent;
-            color: var(--md-primary);
+        .btn-outlined:hover {
+            background: var(--md-primary-container);
+            border-color: var(--md-primary);
+            transform: translateY(-2px);
         }
 
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 120px var(--md-spacing-lg) var(--md-spacing-xl);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-content {
+        /* Main Content */
+        .main-content {
             max-width: 1200px;
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--md-spacing-xl);
-            align-items: center;
+            margin: 0 auto;
+            padding: 0 var(--md-spacing-xl) var(--md-spacing-xxl);
         }
 
-        .hero-text {
-            z-index: 2;
-        }
-
-        .hero-title {
-            font-size: 3.5rem;
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: var(--md-spacing-lg);
-            background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-tertiary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-subtitle {
-            font-size: 1.25rem;
-            color: var(--md-on-surface-variant);
-            margin-bottom: var(--md-spacing-xl);
-            max-width: 500px;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: var(--md-spacing-md);
-            flex-wrap: wrap;
-        }
-
-        .hero-visual {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .app-preview {
-            width: 100%;
-            max-width: 500px;
-            border-radius: var(--md-radius-large);
-            overflow: hidden;
-            box-shadow: var(--md-elevation-5);
-            transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
-            transition: var(--md-transition);
-            position: relative;
-            z-index: 2;
-        }
-
-        .app-preview:hover {
-            transform: perspective(1000px) rotateY(0) rotateX(0);
-        }
-
-        .floating-element {
-            position: absolute;
-            border-radius: var(--md-radius-medium);
-            box-shadow: var(--md-elevation-2);
-            background: var(--md-surface);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--md-spacing-md);
-            z-index: 1;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .floating-element:nth-child(1) {
-            top: 10%;
-            left: 5%;
-            width: 80px;
-            height: 80px;
-            animation-delay: 0s;
-        }
-
-        .floating-element:nth-child(2) {
-            top: 20%;
-            right: 10%;
-            width: 60px;
-            height: 60px;
-            animation-delay: 1s;
-        }
-
-        .floating-element:nth-child(3) {
-            bottom: 20%;
-            left: 10%;
-            width: 70px;
-            height: 70px;
-            animation-delay: 2s;
-        }
-
-        .floating-element:nth-child(4) {
-            bottom: 10%;
-            right: 5%;
-            width: 90px;
-            height: 90px;
-            animation-delay: 3s;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-
-        /* Features Section */
-        .features {
-            padding: var(--md-spacing-xl) var(--md-spacing-lg);
-            background: var(--md-surface);
+        /* Section Common Styles */
+        .section {
+            margin-bottom: var(--md-spacing-xxl);
             position: relative;
         }
 
         .section-header {
             text-align: center;
-            max-width: 800px;
-            margin: 0 auto var(--md-spacing-xl);
+            margin-bottom: var(--md-spacing-xl);
         }
 
         .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: var(--md-spacing-md);
+            font-family: var(--md-font-logo);
+            font-size: clamp(2.75rem, 5vw, 3.5rem);
+            font-weight: 800;
             color: var(--md-on-surface);
+            margin-bottom: var(--md-spacing-md);
+            position: relative;
+            display: inline-block;
+            letter-spacing: -0.5px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--md-primary), var(--md-secondary));
+            border-radius: 3px;
         }
 
         .section-subtitle {
-            font-size: 1.125rem;
+            font-family: var(--md-font-heading);
+            font-size: clamp(1.25rem, 2vw, 1.5rem);
             color: var(--md-on-surface-variant);
+            max-width: 700px;
+            margin: var(--md-spacing-lg) auto 0;
             line-height: 1.6;
         }
 
+        /* Features Grid */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: var(--md-spacing-lg);
-            max-width: 1200px;
-            margin: 0 auto;
+            margin-top: var(--md-spacing-xl);
         }
 
         .feature-card {
-            background: var(--md-background);
+            background: var(--md-surface);
             border-radius: var(--md-radius-large);
-            padding: var(--md-spacing-xl);
-            box-shadow: var(--md-elevation-1);
+            overflow: hidden;
+            border: 1px solid var(--md-outline);
             transition: var(--md-transition);
-            border: 1px solid var(--md-outline-variant);
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
             position: relative;
-            overflow: hidden;
         }
 
         .feature-card::before {
@@ -458,58 +768,59 @@
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
+            width: 100%;
             height: 4px;
-            background: linear-gradient(90deg, var(--md-primary), var(--md-tertiary));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: var(--md-transition);
+            background: linear-gradient(90deg, var(--md-primary), var(--md-secondary));
         }
 
         .feature-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-12px) scale(1.02);
             box-shadow: var(--md-elevation-3);
         }
 
-        .feature-card:hover::before {
-            transform: scaleX(1);
+        .feature-content {
+            padding: var(--md-spacing-xl);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .feature-icon {
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
             border-radius: var(--md-radius-medium);
-            background: var(--md-primary-container);
-            color: var(--md-on-primary-container);
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: var(--md-spacing-lg);
+            color: var(--md-on-primary);
+            font-size: 1.5rem;
+            box-shadow: var(--md-elevation-1);
             transition: var(--md-transition);
         }
 
         .feature-card:hover .feature-icon {
-            transform: scale(1.1);
+            transform: rotate(15deg) scale(1.1);
         }
 
         .feature-title {
+            font-family: var(--md-font-heading);
             font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: var(--md-spacing-md);
+            font-weight: 700;
+            margin-bottom: var(--md-spacing-sm);
             color: var(--md-on-surface);
         }
 
         .feature-description {
             color: var(--md-on-surface-variant);
+            margin-bottom: var(--md-spacing-lg);
+            flex: 1;
+            font-size: 1rem;
             line-height: 1.6;
         }
 
-        /* Interactive App Models Section */
-        .app-showcase {
-            padding: var(--md-spacing-xl) var(--md-spacing-lg);
-            background: var(--md-background);
-        }
-
+        /* App Models Container */
         .app-models-container {
             display: flex;
             flex-wrap: wrap;
@@ -529,6 +840,7 @@
             transition: var(--md-transition);
             position: relative;
             cursor: pointer;
+            border: 1px solid var(--md-outline);
         }
 
         .app-model:hover {
@@ -538,7 +850,7 @@
 
         .app-model-header {
             height: 60px;
-            background: var(--md-primary);
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -580,10 +892,11 @@
         .app-model-note-title {
             font-weight: 500;
             margin-bottom: var(--md-spacing-xs);
+            color: var(--md-on-surface);
         }
 
         .app-model-note-preview {
-            font-size: var(--md-font-size-label);
+            font-size: 0.875rem;
             color: var(--md-on-surface-variant);
         }
 
@@ -597,7 +910,7 @@
         }
 
         .app-model-editor-title {
-            font-size: var(--md-font-size-title);
+            font-size: 1.375rem;
             font-weight: 500;
             margin-bottom: var(--md-spacing-md);
             border: none;
@@ -622,7 +935,7 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: var(--md-primary);
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
             color: var(--md-on-primary);
             display: flex;
             align-items: center;
@@ -630,122 +943,98 @@
             box-shadow: var(--md-elevation-3);
         }
 
-        /* How It Works Section */
-        .how-it-works {
-            padding: var(--md-spacing-xl) var(--md-spacing-lg);
-            background: var(--md-surface);
+        /* Steps Grid */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--md-spacing-lg);
+            margin-top: var(--md-spacing-xl);
         }
 
-        .steps-container {
-            display: flex;
-            flex-direction: column;
-            gap: var(--md-spacing-xl);
-            max-width: 800px;
-            margin: 0 auto;
+        .step-item {
+            text-align: center;
+            padding: var(--md-spacing-xl);
+            background: var(--md-surface);
+            border-radius: var(--md-radius-large);
+            border: 1px solid var(--md-outline);
+            transition: var(--md-transition);
             position: relative;
         }
 
-        .steps-container::before {
+        .step-item::before {
             content: '';
             position: absolute;
             top: 0;
-            bottom: 0;
-            left: 30px;
-            width: 2px;
-            background: var(--md-outline-variant);
-            z-index: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--md-primary), var(--md-secondary));
         }
 
-        .step {
-            display: flex;
-            gap: var(--md-spacing-lg);
-            position: relative;
-            z-index: 1;
+        .step-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--md-elevation-3);
         }
 
         .step-number {
-            width: 60px;
-            height: 60px;
+            width: 72px;
+            height: 72px;
+            margin: 0 auto var(--md-spacing-lg);
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
             border-radius: 50%;
-            background: var(--md-primary);
-            color: var(--md-on-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            color: var(--md-on-primary);
+            font-size: 1.75rem;
             font-weight: 700;
-            flex-shrink: 0;
-            box-shadow: var(--md-elevation-1);
+            box-shadow: var(--md-elevation-2);
             transition: var(--md-transition);
         }
 
-        .step:hover .step-number {
-            transform: scale(1.1);
+        .step-item:hover .step-number {
+            transform: rotate(15deg) scale(1.1);
         }
 
-        .step-content {
-            flex: 1;
-            padding-top: var(--md-spacing-sm);
-        }
-
-        .step-title {
-            font-size: 1.375rem;
-            font-weight: 600;
-            margin-bottom: var(--md-spacing-sm);
-            color: var(--md-on-surface);
-        }
-
-        .step-description {
-            color: var(--md-on-surface-variant);
-            line-height: 1.6;
-        }
-
-        /* Testimonials Section */
-        .testimonials {
-            padding: var(--md-spacing-xl) var(--md-spacing-lg);
-            background: var(--md-background);
-        }
-
+        /* Testimonials Grid */
         .testimonials-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: var(--md-spacing-lg);
-            max-width: 1200px;
-            margin: 0 auto;
+            margin-top: var(--md-spacing-xl);
         }
 
         .testimonial-card {
             background: var(--md-surface);
-            border-radius: var(--md-radius-large);
             padding: var(--md-spacing-xl);
-            box-shadow: var(--md-elevation-1);
-            border: 1px solid var(--md-outline-variant);
-            position: relative;
+            border-radius: var(--md-radius-large);
+            border: 1px solid var(--md-outline);
             transition: var(--md-transition);
+            position: relative;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            font-size: 4rem;
+            color: var(--md-primary);
+            opacity: 0.2;
+            font-family: var(--md-font-logo);
         }
 
         .testimonial-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.02);
             box-shadow: var(--md-elevation-3);
         }
 
-        .testimonial-quote {
+        .testimonial-text {
+            color: var(--md-on-surface);
+            font-style: italic;
+            margin-bottom: var(--md-spacing-lg);
             font-size: 1.125rem;
             line-height: 1.6;
-            color: var(--md-on-surface);
-            margin-bottom: var(--md-spacing-lg);
-            position: relative;
-        }
-
-        .testimonial-quote::before {
-            content: '"';
-            font-size: 4rem;
-            color: var(--md-primary-container);
-            position: absolute;
-            top: -20px;
-            left: -10px;
-            opacity: 0.3;
-            line-height: 1;
         }
 
         .testimonial-author {
@@ -755,178 +1044,166 @@
         }
 
         .author-avatar {
-            width: 50px;
-            height: 50px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            background: var(--md-primary-container);
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--md-on-primary-container);
+            color: var(--md-on-primary);
             font-weight: 600;
+            font-size: 1.25rem;
+            transition: var(--md-transition);
         }
 
-        .author-info {
-            display: flex;
-            flex-direction: column;
+        .testimonial-card:hover .author-avatar {
+            transform: rotate(15deg) scale(1.1);
         }
 
-        .author-name {
+        .author-info h4 {
+            font-family: var(--md-font-heading);
+            font-size: 1.125rem;
             font-weight: 600;
             color: var(--md-on-surface);
+            margin-bottom: 2px;
         }
 
-        .author-role {
-            font-size: var(--md-font-size-label);
+        .author-info p {
             color: var(--md-on-surface-variant);
+            font-size: 0.875rem;
         }
 
         /* CTA Section */
-        .cta {
-            padding: var(--md-spacing-xl) var(--md-spacing-lg);
-            background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-tertiary) 100%);
-            color: white;
+        .cta-section {
             text-align: center;
+            padding: var(--md-spacing-xl);
+            background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-secondary) 100%);
+            border-radius: var(--md-radius-large);
+            border: 1px solid var(--md-outline);
+            margin-top: var(--md-spacing-xl);
             position: relative;
             overflow: hidden;
         }
 
-        .cta::before {
+        .cta-section::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        .cta-content {
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--md-primary), var(--md-secondary));
         }
 
         .cta-title {
-            font-size: 2.5rem;
+            font-family: var(--md-font-logo);
+            font-size: clamp(2rem, 3vw, 2.5rem);
             font-weight: 700;
+            color: white;
             margin-bottom: var(--md-spacing-md);
         }
 
         .cta-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: var(--md-spacing-lg);
             font-size: 1.25rem;
-            margin-bottom: var(--md-spacing-xl);
-            opacity: 0.9;
-        }
-
-        .cta-actions {
-            display: flex;
-            gap: var(--md-spacing-md);
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-light {
-            background: white;
-            color: var(--md-primary);
-        }
-
-        .btn-light:hover {
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .btn-outline-light {
-            background: transparent;
-            color: white;
-            border: 1px solid white;
-        }
-
-        .btn-outline-light:hover {
-            background: rgba(255, 255, 255, 0.1);
+            line-height: 1.6;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Footer */
         .footer {
-            padding: var(--md-spacing-xl) var(--md-spacing-lg);
+            padding: var(--md-spacing-xxl) var(--md-spacing-xl);
             background: var(--md-surface);
-            border-top: 1px solid var(--md-outline-variant);
+            border-top: 1px solid var(--md-outline);
+            margin-top: var(--md-spacing-xxl);
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--md-primary), var(--md-secondary));
         }
 
         .footer-content {
             max-width: 1200px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: var(--md-spacing-xl);
+        }
+
+        .footer-brand {
+            text-align: center;
+            margin-bottom: var(--md-spacing-xxl);
         }
 
         .footer-logo {
-            display: flex;
-            align-items: center;
-            gap: var(--md-spacing-md);
-            margin-bottom: var(--md-spacing-lg);
+            font-family: var(--md-font-logo);
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--md-spacing-sm);
         }
 
-        .footer-description {
+        .footer-tagline {
             color: var(--md-on-surface-variant);
-            line-height: 1.6;
-            margin-bottom: var(--md-spacing-lg);
+            font-size: 1.25rem;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
-        .footer-heading {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: var(--md-spacing-md);
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--md-spacing-xl);
+            margin-bottom: var(--md-spacing-xxl);
+        }
+
+        .footer-column h3 {
+            font-family: var(--md-font-heading);
+            font-size: 1.25rem;
             color: var(--md-on-surface);
+            margin-bottom: var(--md-spacing-lg);
+            position: relative;
+            display: inline-block;
         }
 
-        .footer-links {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: var(--md-spacing-sm);
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--md-primary), var(--md-secondary));
         }
 
-        .footer-link {
+        .footer-column a {
+            display: block;
             color: var(--md-on-surface-variant);
             text-decoration: none;
+            margin-bottom: var(--md-spacing-md);
             transition: var(--md-transition);
+            font-size: 1rem;
         }
 
-        .footer-link:hover {
+        .footer-column a:hover {
             color: var(--md-primary);
-        }
-
-        .social-links {
-            display: flex;
-            gap: var(--md-spacing-sm);
-            margin-top: var(--md-spacing-md);
-        }
-
-        .social-link {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--md-surface-variant);
-            color: var(--md-on-surface);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--md-transition);
-        }
-
-        .social-link:hover {
-            background: var(--md-primary);
-            color: var(--md-on-primary);
-            transform: translateY(-2px);
+            transform: translateX(8px);
         }
 
         .footer-bottom {
-            max-width: 1200px;
-            margin: var(--md-spacing-xl) auto 0;
-            padding-top: var(--md-spacing-lg);
-            border-top: 1px solid var(--md-outline-variant);
+            border-top: 1px solid var(--md-outline);
+            padding-top: var(--md-spacing-xl);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -934,683 +1211,1301 @@
             gap: var(--md-spacing-md);
         }
 
-        .copyright {
+        .footer-copyright {
             color: var(--md-on-surface-variant);
-            font-size: var(--md-font-size-label);
+            font-size: 0.875rem;
         }
 
-        .footer-legal {
+        .social-links {
             display: flex;
-            gap: var(--md-spacing-lg);
+            gap: var(--md-spacing-sm);
         }
 
-        .footer-legal-link {
-            color: var(--md-on-surface-variant);
-            text-decoration: none;
-            font-size: var(--md-font-size-label);
-            transition: var(--md-transition);
-        }
-
-        .footer-legal-link:hover {
-            color: var(--md-primary);
-        }
-
-        /* Theme Toggle */
-        .theme-toggle {
-            background: transparent;
-            border: none;
+        .social-link {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--md-surface-variant);
             color: var(--md-on-surface);
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            text-decoration: none;
             transition: var(--md-transition);
         }
 
-        .theme-toggle:hover {
-            background: var(--md-surface-variant);
+        .social-link:hover {
+            background: linear-gradient(135deg, var(--md-primary), var(--md-secondary));
+            color: var(--md-on-primary);
+            transform: translateY(-4px) rotate(10deg);
         }
 
-        /* Morphing Icons */
-        .morph-icon {
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        /* Loading Animation */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--md-background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
 
-        .morph-icon.morphed {
-            transform: scale(1.2) rotate(10deg);
-            color: var(--md-primary);
+        .loading.hidden {
+            opacity: 0;
+            visibility: hidden;
         }
 
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .hero-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .hero-actions {
-                justify-content: center;
-            }
-
-            .app-models-container {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr 1fr;
-            }
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--md-surface-variant);
+            border-top: 4px solid var(--md-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-
-            .hero-title {
-                font-size: 2.5rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .app-model {
-                width: 100%;
-                max-width: 300px;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-bottom {
-                flex-direction: column;
-                text-align: center;
-            }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        /* Animation Classes */
-        .fade-in {
+        /* Animations */
+        .animate-on-scroll {
             opacity: 0;
             transform: translateY(30px);
             transition: opacity 0.6s ease, transform 0.6s ease;
         }
 
-        .fade-in.visible {
+        .animate-on-scroll.visible {
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Scroll to top button */
-        .scroll-to-top {
-            position: fixed;
-            bottom: var(--md-spacing-lg);
-            right: var(--md-spacing-lg);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--md-primary);
-            color: var(--md-on-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            cursor: pointer;
-            box-shadow: var(--md-elevation-3);
+        /* Hover glow effect */
+        .hover-glow {
             transition: var(--md-transition);
-            opacity: 0;
-            visibility: hidden;
-            z-index: 99;
         }
 
-        .scroll-to-top.visible {
-            opacity: 1;
-            visibility: visible;
+        .hover-glow:hover {
+            box-shadow: 0 0 20px rgba(26, 115, 232, 0.3);
         }
 
-        .scroll-to-top:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--md-elevation-4);
+        /* Scroll progress indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--md-primary), var(--md-secondary));
+            z-index: 1001;
+            transition: width 0.1s ease;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .desktop-nav {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
+            }
+            
+            .hero-section {
+                padding: 140px var(--md-spacing-lg) var(--md-spacing-xl);
+            }
+            
+            .main-content {
+                padding: 0 var(--md-spacing-lg) var(--md-spacing-xxl);
+            }
+            
+            .features-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+            
+            .floating-navbar {
+                gap: var(--md-spacing-sm);
+                padding: var(--md-spacing-xs) var(--md-spacing-md);
+            }
+            
+            .app-model {
+                width: 280px;
+                height: 480px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .floating-navbar {
+                width: 95%;
+                padding: var(--md-spacing-xs) var(--md-spacing-md);
+                top: var(--md-spacing-md);
+                justify-content: space-between;
+            }
+            
+            .nav-name {
+                font-size: 1.125rem;
+            }
+            
+            .hero-section {
+                padding: 120px var(--md-spacing-md) var(--md-spacing-lg);
+                min-height: 90vh;
+            }
+            
+            .hero-title {
+                font-size: clamp(2.75rem, 6vw, 4rem);
+            }
+            
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+            
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1.125rem;
+            }
+            
+            .features-grid,
+            .steps-grid,
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .app-model {
+                width: 100%;
+                max-width: 300px;
+                height: 450px;
+            }
+            
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: var(--md-spacing-lg);
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--md-spacing-lg);
+            }
+            
+            .mobile-nav {
+                padding: var(--md-spacing-xl) var(--md-spacing-lg);
+            }
+            
+            .mobile-nav-link {
+                font-size: 1.125rem;
+                padding: var(--md-spacing-md);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1rem;
+            }
+            
+            .feature-card,
+            .step-item,
+            .testimonial-card {
+                padding: var(--md-spacing-lg);
+            }
+            
+            .app-model {
+                height: 400px;
+            }
+            
+            .nav-name {
+                display: none;
+            }
+            
+            .nav-brand {
+                gap: 0;
+            }
         }
     </style>
 </head>
 <body class="light-theme">
-    <!-- Header -->
-    <header class="landing-header">
-        <div class="logo-container">
-            <div class="logo">
-                <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe Logo">
+    <!-- Loading Screen -->
+    <div class="loading" id="loading">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Scroll progress indicator -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- Modern Floating Pill Navbar -->
+    <nav class="floating-navbar">
+        <!-- Left side: Logo and Brand -->
+        <a href="#home" class="nav-brand">
+            <div class="nav-logo">
+                <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='M';">
             </div>
-            <h1 class="app-name">Mindscribe</h1>
-        </div>
-        
-        <nav class="nav-links">
-            <a href="#features" class="nav-link">Features</a>
-            <a href="#app-showcase" class="nav-link">App Preview</a>
-            <a href="#how-it-works" class="nav-link">How It Works</a>
-            <a href="#testimonials" class="nav-link">Testimonials</a>
-        </nav>
-        
-        <div class="header-actions">
-            <button class="btn btn-text" id="theme-toggle">
+            <span class="nav-name">Mindscribe</span>
+        </a>
+
+        <!-- Desktop Navigation Links (Right side) -->
+        <div class="desktop-nav">
+            <a href="#home" class="nav-link active">
+                <i class="fas fa-home" style="font-size: 0.9rem; margin-right: 4px;"></i>
+                Home
+            </a>
+            <a href="#features" class="nav-link">
+                <i class="fas fa-star" style="font-size: 0.9rem; margin-right: 4px;"></i>
+                Features
+            </a>
+            <a href="#app-showcase" class="nav-link">
+                <i class="fas fa-eye" style="font-size: 0.9rem; margin-right: 4px;"></i>
+                App Preview
+            </a>
+            <a href="#how-it-works" class="nav-link">
+                <i class="fas fa-cogs" style="font-size: 0.9rem; margin-right: 4px;"></i>
+                How It Works
+            </a>
+            
+            <!-- Profile Avatar Container (Will be auto-populated by auth.js) -->
+            <div id="desktopAvatar"></div>
+            
+            <!-- Sign In Button (Will be hidden when user is signed in) -->
+            <a href="https://aditya-cmd-max.github.io/signin" class="btn btn-filled" id="signInButton">
+                <i class="fas fa-sign-in-alt" style="font-size: 0.9rem; margin-right: 4px;"></i>
+                Sign In
+            </a>
+            
+            <a href="https://aditya-cmd-max.github.io/mindscribe/app" class="btn btn-filled">
+                <i class="fas fa-rocket" style="font-size: 0.9rem; margin-right: 4px;"></i>
+                Try Mindscribe
+            </a>
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
                 <span class="material-icons-round">dark_mode</span>
             </button>
-            <a href="https://aditya-cmd-max.github.io/mindscribe/app" class="btn btn-filled">Try Mindscribe</a>
         </div>
-    </header>
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+            <span class="material-icons-round">menu</span>
+        </button>
+    </nav>
+
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <div class="nav-brand">
+                <div class="nav-logo">
+                    <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='M';">
+                </div>
+                <span class="nav-name">Mindscribe</span>
+            </div>
+            <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">
+                <span class="material-icons-round">close</span>
+            </button>
+        </div>
+        
+        <!-- Mobile Avatar Container (Will be auto-populated by auth.js) -->
+        <div id="mobileAvatar"></div>
+        
+        <a href="#home" class="mobile-nav-link active">
+            <i class="fas fa-home"></i>
+            Home
+        </a>
+        <a href="#features" class="mobile-nav-link">
+            <i class="fas fa-star"></i>
+            Features
+        </a>
+        <a href="#app-showcase" class="mobile-nav-link">
+            <i class="fas fa-eye"></i>
+            App Preview
+        </a>
+        <a href="#how-it-works" class="mobile-nav-link">
+            <i class="fas fa-cogs"></i>
+            How It Works
+        </a>
+        
+        <!-- Sign In Link for mobile (will be hidden by auth.js when user is signed in) -->
+        <a href="https://aditya-cmd-max.github.io/signin" class="mobile-nav-link" id="mobileSignInLink">
+            <i class="fas fa-sign-in-alt"></i>
+            Sign In
+        </a>
+        
+        <a href="https://aditya-cmd-max.github.io/mindscribe/app" class="mobile-nav-link">
+            <i class="fas fa-rocket"></i>
+            Try Mindscribe
+        </a>
+        
+        <!-- Mobile Theme Toggle -->
+        <div class="mobile-theme-toggle">
+            <span>Theme</span>
+            <button class="mobile-theme-btn" id="mobileThemeToggle" aria-label="Toggle theme">
+                <span class="material-icons-round">dark_mode</span>
+            </button>
+        </div>
+        
+        <div style="margin-top: auto; padding-top: var(--md-spacing-xl);">
+            <a href="https://aditya-cmd-max.github.io/mindscribe/app" class="btn btn-filled" style="width: 100%;">
+                <i class="fas fa-rocket" style="margin-right: 8px;"></i>
+                Get Started
+            </a>
+        </div>
+    </div>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero-section" id="home">
         <div class="hero-content">
-            <div class="hero-text fade-in">
-                <h1 class="hero-title">Transform Your Learning with AI-Powered Notes</h1>
-                <p class="hero-subtitle">Mindscribe combines the simplicity of note-taking with the power of artificial intelligence to help you learn faster, remember more, and organize your thoughts like never before.</p>
-                <div class="hero-actions">
-                    <a href="https://aditya-cmd-max.github.io/mindscribe/app" class="btn btn-filled">Start Taking Notes</a>
-                    <a href="#app-showcase" class="btn btn-outlined">See App Preview</a>
-                </div>
-            </div>
-            
-            <div class="hero-visual">
-                <div class="floating-element">
-                    <span class="material-icons-round morph-icon" style="font-size: 2rem; color: var(--md-primary);">auto_awesome</span>
-                </div>
-                <div class="floating-element">
-                    <span class="material-icons-round morph-icon" style="font-size: 1.5rem; color: var(--md-tertiary);">summarize</span>
-                </div>
-                <div class="floating-element">
-                    <span class="material-icons-round morph-icon" style="font-size: 1.75rem; color: var(--md-secondary);">psychology</span>
-                </div>
-                <div class="floating-element">
-                    <span class="material-icons-round morph-icon" style="font-size: 2rem; color: var(--md-primary);">edit_note</span>
-                </div>
-                <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe App Preview" class="app-preview">
+            <h1 class="hero-title">Mindscribe</h1>
+            <p class="hero-subtitle">
+                Transform Your Learning with AI-Powered Notes
+                <span class="typing-text">Mindscribe combines the simplicity of note-taking with the power of artificial intelligence to help you learn faster, remember more, and organize your thoughts like never before.</span>
+            </p>
+            <div class="hero-cta">
+                <a href="https://aditya-cmd-max.github.io/mindscribe/app" class="btn btn-filled hover-glow">
+                    <i class="fas fa-rocket" style="margin-right: 8px;"></i>
+                    Start Taking Notes
+                </a>
+                <a href="#app-showcase" class="btn btn-outlined hover-glow">
+                    <i class="fas fa-eye" style="margin-right: 8px;"></i>
+                    See App Preview
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="section-header fade-in">
-            <h2 class="section-title">Powerful Features for Modern Learners</h2>
-            <p class="section-subtitle">Mindscribe is packed with features designed to enhance your learning experience and make note-taking more effective than ever.</p>
-        </div>
-        
-        <div class="features-grid">
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <span class="material-icons-round morph-icon" style="font-size: 2rem;">auto_awesome</span>
-                </div>
-                <h3 class="feature-title">AI-Powered Assistance</h3>
-                <p class="feature-description">Get intelligent summaries, generate action items, brainstorm ideas, and more with our integrated AI assistant powered by Google's Gemini.</p>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Features Section -->
+        <section class="section" id="features">
+            <div class="section-header">
+                <h2 class="section-title">Powerful Features for Modern Learners</h2>
+                <p class="section-subtitle">Mindscribe is packed with features designed to enhance your learning experience and make note-taking more effective than ever.</p>
             </div>
             
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <span class="material-icons-round morph-icon" style="font-size: 2rem;">image</span>
+            <div class="features-grid">
+                <div class="feature-card animate-on-scroll hover-glow">
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="feature-title">AI-Powered Assistance</h3>
+                        <p class="feature-description">
+                            Get intelligent summaries, generate action items, brainstorm ideas, and more with our integrated AI assistant powered by Google's Gemini.
+                        </p>
+                    </div>
                 </div>
-                <h3 class="feature-title">Rich Media Support</h3>
-                <p class="feature-description">Enhance your notes with images, links, and embedded content. Our AI can even analyze images to provide insights and descriptions.</p>
-            </div>
-            
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <span class="material-icons-round morph-icon" style="font-size: 2rem;">category</span>
-                </div>
-                <h3 class="feature-title">Smart Organization</h3>
-                <p class="feature-description">Tag, search, and filter your notes with ease. Our intuitive interface helps you find exactly what you need when you need it.</p>
-            </div>
-            
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <span class="material-icons-round morph-icon" style="font-size: 2rem;">dark_mode</span>
-                </div>
-                <h3 class="feature-title">Dark & Light Themes</h3>
-                <p class="feature-description">Switch between beautiful dark and light themes to match your environment and preferences. Your eyes will thank you.</p>
-            </div>
-            
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <span class="material-icons-round morph-icon" style="font-size: 2rem;">download</span>
-                </div>
-                <h3 class="feature-title">Export & Share</h3>
-                <p class="feature-description">Export your notes in multiple formats including TXT, PDF, and HTML. Share your knowledge with others effortlessly.</p>
-            </div>
-            
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <span class="material-icons-round morph-icon" style="font-size: 2rem;">security</span>
-                </div>
-                <h3 class="feature-title">Privacy First</h3>
-                <p class="feature-description">Your data stays on your device. We don't store your notes on our servers, giving you complete control over your information.</p>
-            </div>
-        </div>
-    </section>
 
-    <!-- Interactive App Models Section -->
-    <section class="app-showcase" id="app-showcase">
-        <div class="section-header fade-in">
-            <h2 class="section-title">Experience Mindscribe</h2>
-            <p class="section-subtitle">See how Mindscribe works with these interactive app models that showcase the key features of our AI-powered notebook.</p>
-        </div>
-        
-        <div class="app-models-container">
-            <!-- App Model 1: Notes List View -->
-            <div class="app-model fade-in">
-                <div class="app-model-header">
-                    <div class="logo-container" style="gap: var(--md-spacing-sm);">
-                        <div class="logo" style="width: 30px; height: 30px;">
-                            <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe Logo">
+                <div class="feature-card animate-on-scroll hover-glow">
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-image"></i>
                         </div>
-                        <span style="font-size: var(--md-font-size-label); font-weight: 500;">Mindscribe</span>
-                    </div>
-                    <span class="material-icons-round">search</span>
-                </div>
-                <div class="app-model-content">
-                    <div class="app-model-sidebar">
-                        <span class="material-icons-round" style="color: var(--md-primary);">notes</span>
-                        <span class="material-icons-round" style="color: var(--md-on-surface-variant);">star</span>
-                        <span class="material-icons-round" style="color: var(--md-on-surface-variant);">schedule</span>
-                        <span class="material-icons-round" style="color: var(--md-on-surface-variant);">label</span>
-                    </div>
-                    <div class="app-model-main">
-                        <div class="app-model-note">
-                            <div class="app-model-note-title">Machine Learning Basics</div>
-                            <div class="app-model-note-preview">Introduction to supervised and unsupervised learning algorithms...</div>
-                        </div>
-                        <div class="app-model-note">
-                            <div class="app-model-note-title">Project Meeting Notes</div>
-                            <div class="app-model-note-preview">Discussed timeline and deliverables for Q3 product launch...</div>
-                        </div>
-                        <div class="app-model-note">
-                            <div class="app-model-note-title">Research Paper Ideas</div>
-                            <div class="app-model-note-preview">Potential topics for next quarter's academic publication...</div>
-                        </div>
-                        <div class="app-model-note">
-                            <div class="app-model-note-title">Book Summary - Deep Work</div>
-                            <div class="app-model-note-preview">Key takeaways from Cal Newport's book on focused work...</div>
-                        </div>
+                        <h3 class="feature-title">Rich Media Support</h3>
+                        <p class="feature-description">
+                            Enhance your notes with images, links, and embedded content. Our AI can even analyze images to provide insights and descriptions.
+                        </p>
                     </div>
                 </div>
-                <div class="app-model-ai">
-                    <span class="material-icons-round">auto_awesome</span>
-                </div>
-            </div>
-            
-            <!-- App Model 2: Note Editor View -->
-            <div class="app-model fade-in">
-                <div class="app-model-header">
-                    <div style="display: flex; align-items: center; gap: var(--md-spacing-sm);">
-                        <span class="material-icons-round">arrow_back</span>
-                        <span style="font-size: var(--md-font-size-label); font-weight: 500;">Editing Note</span>
-                    </div>
-                    <div style="display: flex; gap: var(--md-spacing-sm);">
-                        <span class="material-icons-round">save</span>
-                        <span class="material-icons-round">more_vert</span>
-                    </div>
-                </div>
-                <div class="app-model-content">
-                    <div class="app-model-editor">
-                        <input type="text" class="app-model-editor-title" value="Machine Learning Basics" readonly>
-                        <div class="app-model-editor-content">
-                            <p>Supervised Learning:</p>
-                            <p>- Classification: Predicting categories</p>
-                            <p>- Regression: Predicting continuous values</p>
-                            <br>
-                            <p>Unsupervised Learning:</p>
-                            <p>- Clustering: Grouping similar data</p>
-                            <p>- Dimensionality Reduction</p>
-                            <br>
-                            <p>Key Algorithms:</p>
-                            <p>- Linear Regression</p>
-                            <p>- Decision Trees</p>
-                            <p>- Neural Networks</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="app-model-ai">
-                    <span class="material-icons-round">auto_awesome</span>
-                </div>
-            </div>
-            
-            <!-- App Model 3: AI Assistant View -->
-            <div class="app-model fade-in">
-                <div class="app-model-header">
-                    <div style="display: flex; align-items: center; gap: var(--md-spacing-sm);">
-                        <span class="material-icons-round">arrow_back</span>
-                        <span style="font-size: var(--md-font-size-label); font-weight: 500;">AI Assistant</span>
-                    </div>
-                    <span class="material-icons-round">close</span>
-                </div>
-                <div class="app-model-content">
-                    <div class="app-model-main" style="display: flex; flex-direction: column; gap: var(--md-spacing-md);">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--md-spacing-sm);">
-                            <div style="background: var(--md-primary-container); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); text-align: center;">
-                                <span class="material-icons-round" style="color: var(--md-on-primary-container);">summarize</span>
-                                <div style="font-size: var(--md-font-size-label); margin-top: var(--md-spacing-xs);">Summarize</div>
-                            </div>
-                            <div style="background: var(--md-surface-variant); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); text-align: center;">
-                                <span class="material-icons-round">checklist</span>
-                                <div style="font-size: var(--md-font-size-label); margin-top: var(--md-spacing-xs);">Action Items</div>
-                            </div>
-                            <div style="background: var(--md-surface-variant); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); text-align: center;">
-                                <span class="material-icons-round">edit_note</span>
-                                <div style="font-size: var(--md-font-size-label); margin-top: var(--md-spacing-xs);">Continue Writing</div>
-                            </div>
-                            <div style="background: var(--md-surface-variant); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); text-align: center;">
-                                <span class="material-icons-round">lightbulb</span>
-                                <div style="font-size: var(--md-font-size-label); margin-top: var(--md-spacing-xs);">Brainstorm</div>
-                            </div>
-                        </div>
-                        <div style="background: var(--md-surface-variant); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); flex: 1; display: flex; align-items: center; justify-content: center;">
-                            <div style="text-align: center; color: var(--md-on-surface-variant);">
-                                <span class="material-icons-round" style="font-size: 2rem; margin-bottom: var(--md-spacing-sm);">auto_awesome</span>
-                                <div>Select an AI feature to enhance your note</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- How It Works Section -->
-    <section class="how-it-works" id="how-it-works">
-        <div class="section-header fade-in">
-            <h2 class="section-title">How Mindscribe Works</h2>
-            <p class="section-subtitle">Getting started with Mindscribe is simple and intuitive. Here's how you can transform your learning process in just a few steps.</p>
-        </div>
-        
-        <div class="steps-container">
-            <div class="step fade-in">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h3 class="step-title">Create Your First Note</h3>
-                    <p class="step-description">Start by creating a new note. Give it a title and begin writing your thoughts, ideas, or study materials.</p>
+                <div class="feature-card animate-on-scroll hover-glow">
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <h3 class="feature-title">Smart Organization</h3>
+                        <p class="feature-description">
+                            Tag, search, and filter your notes with ease. Our intuitive interface helps you find exactly what you need when you need it.
+                        </p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="step fade-in">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h3 class="step-title">Enhance with AI</h3>
-                    <p class="step-description">Use the AI assistant to summarize content, generate action items, brainstorm ideas, or get explanations for complex topics.</p>
-                </div>
-            </div>
-            
-            <div class="step fade-in">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h3 class="step-title">Organize & Tag</h3>
-                    <p class="step-description">Add tags to categorize your notes. Use the search functionality to quickly find what you're looking for.</p>
-                </div>
-            </div>
-            
-            <div class="step fade-in">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <h3 class="step-title">Review & Export</h3>
-                    <p class="step-description">Review your notes in a clean, distraction-free interface. Export them to share with others or for offline access.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Testimonials Section -->
-    <section class="testimonials" id="testimonials">
-        <div class="section-header fade-in">
-            <h2 class="section-title">What Users Are Saying</h2>
-            <p class="section-subtitle">Discover how Mindscribe is helping students, professionals, and lifelong learners achieve their goals.</p>
-        </div>
-        
-        <div class="testimonials-grid">
-            <div class="testimonial-card fade-in">
-                <p class="testimonial-quote">Mindscribe has completely transformed how I study for exams. The AI summarization feature saves me hours of work!</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">S</div>
-                    <div class="author-info">
-                        <div class="author-name">Sarah Johnson</div>
-                        <div class="author-role">Medical Student</div>
+                <div class="feature-card animate-on-scroll hover-glow">
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-moon"></i>
+                        </div>
+                        <h3 class="feature-title">Dark & Light Themes</h3>
+                        <p class="feature-description">
+                            Switch between beautiful dark and light themes to match your environment and preferences. Your eyes will thank you.
+                        </p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="testimonial-card fade-in">
-                <p class="testimonial-quote">As a researcher, I deal with complex information daily. Mindscribe helps me organize my thoughts and generate new insights.</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">M</div>
-                    <div class="author-info">
-                        <div class="author-name">Michael Chen</div>
-                        <div class="author-role">Research Scientist</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="testimonial-card fade-in">
-                <p class="testimonial-quote">The clean interface and powerful features make Mindscribe my go-to note-taking app. I've tried them all, and this is the best.</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">E</div>
-                    <div class="author-info">
-                        <div class="author-name">Emily Rodriguez</div>
-                        <div class="author-role">Product Manager</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- CTA Section -->
-    <section class="cta">
-        <div class="cta-content">
-            <h2 class="cta-title">Ready to Transform Your Learning?</h2>
-            <p class="cta-subtitle">Join thousands of users who are already using Mindscribe to enhance their note-taking and learning experience.</p>
-            <div class="cta-actions">
-                <a href="https://aditya-cmd-max.github.io/mindscribe/app" class="btn btn-light">Get Started Now</a>
-                <a href="#features" class="btn btn-outline-light">Learn More</a>
+                <div class="feature-card animate-on-scroll hover-glow">
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h3 class="feature-title">Export & Share</h3>
+                        <p class="feature-description">
+                            Export your notes in multiple formats including TXT, PDF, and HTML. Share your knowledge with others effortlessly.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="feature-card animate-on-scroll hover-glow">
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Privacy First</h3>
+                        <p class="feature-description">
+                            Your data stays on your device. We don't store your notes on our servers, giving you complete control over your information.
+                        </p>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <!-- Interactive App Models Section -->
+        <section class="section" id="app-showcase">
+            <div class="section-header">
+                <h2 class="section-title">Experience Mindscribe</h2>
+                <p class="section-subtitle">See how Mindscribe works with these interactive app models that showcase the key features of our AI-powered notebook.</p>
+            </div>
+            
+            <div class="app-models-container">
+                <!-- App Model 1: Notes List View -->
+                <div class="app-model animate-on-scroll hover-glow">
+                    <div class="app-model-header">
+                        <div class="logo-container" style="gap: var(--md-spacing-sm);">
+                            <div class="logo" style="width: 30px; height: 30px;">
+                                <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe Logo">
+                            </div>
+                            <span style="font-size: 0.875rem; font-weight: 500;">Mindscribe</span>
+                        </div>
+                        <span class="material-icons-round">search</span>
+                    </div>
+                    <div class="app-model-content">
+                        <div class="app-model-sidebar">
+                            <span class="material-icons-round" style="color: var(--md-primary);">notes</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">star</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">schedule</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">label</span>
+                        </div>
+                        <div class="app-model-main">
+                            <div class="app-model-note">
+                                <div class="app-model-note-title">Machine Learning Basics</div>
+                                <div class="app-model-note-preview">Introduction to supervised and unsupervised learning algorithms...</div>
+                            </div>
+                            <div class="app-model-note">
+                                <div class="app-model-note-title">Project Meeting Notes</div>
+                                <div class="app-model-note-preview">Discussed timeline and deliverables for Q3 product launch...</div>
+                            </div>
+                            <div class="app-model-note">
+                                <div class="app-model-note-title">Research Paper Ideas</div>
+                                <div class="app-model-note-preview">Potential topics for next quarter's academic publication...</div>
+                            </div>
+                            <div class="app-model-note">
+                                <div class="app-model-note-title">Book Summary - Deep Work</div>
+                                <div class="app-model-note-preview">Key takeaways from Cal Newport's book on focused work...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="app-model-ai">
+                        <span class="material-icons-round">auto_awesome</span>
+                    </div>
+                </div>
+                
+                <!-- App Model 2: Note Editor View -->
+                <div class="app-model animate-on-scroll hover-glow">
+                    <div class="app-model-header">
+                        <div style="display: flex; align-items: center; gap: var(--md-spacing-sm);">
+                            <span class="material-icons-round">arrow_back</span>
+                            <span style="font-size: 0.875rem; font-weight: 500;">Editing Note</span>
+                        </div>
+                        <div style="display: flex; gap: var(--md-spacing-sm);">
+                            <span class="material-icons-round">save</span>
+                            <span class="material-icons-round">more_vert</span>
+                        </div>
+                    </div>
+                    <div class="app-model-content">
+                        <div class="app-model-editor">
+                            <input type="text" class="app-model-editor-title" value="Machine Learning Basics" readonly>
+                            <div class="app-model-editor-content">
+                                <p>Supervised Learning:</p>
+                                <p>- Classification: Predicting categories</p>
+                                <p>- Regression: Predicting continuous values</p>
+                                <br>
+                                <p>Unsupervised Learning:</p>
+                                <p>- Clustering: Grouping similar data</p>
+                                <p>- Dimensionality Reduction</p>
+                                <br>
+                                <p>Key Algorithms:</p>
+                                <p>- Linear Regression</p>
+                                <p>- Decision Trees</p>
+                                <p>- Neural Networks</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="app-model-ai">
+                        <span class="material-icons-round">auto_awesome</span>
+                    </div>
+                </div>
+                
+                <!-- App Model 3: AI Assistant View -->
+                <div class="app-model animate-on-scroll hover-glow">
+                    <div class="app-model-header">
+                        <div style="display: flex; align-items: center; gap: var(--md-spacing-sm);">
+                            <span class="material-icons-round">arrow_back</span>
+                            <span style="font-size: 0.875rem; font-weight: 500;">AI Assistant</span>
+                        </div>
+                        <span class="material-icons-round">close</span>
+                    </div>
+                    <div class="app-model-content">
+                        <div class="app-model-main" style="display: flex; flex-direction: column; gap: var(--md-spacing-md);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--md-spacing-sm);">
+                                <div style="background: var(--md-primary-container); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); text-align: center;">
+                                    <span class="material-icons-round" style="color: var(--md-on-primary-container);">summarize</span>
+                                    <div style="font-size: 0.875rem; margin-top: var(--md-spacing-xs);">Summarize</div>
+                                </div>
+                                <div style="background: var(--md-surface-variant); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); text-align: center;">
+                                    <span class="material-icons-round">checklist</span>
+                                    <div style="font-size: 0.875rem; margin-top: var(--md-spacing-xs);">Action Items</div>
+                                </div>
+                                <div style="background: var(--md-surface-variant); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); text-align: center;">
+                                    <span class="material-icons-round">edit_note</span>
+                                    <div style="font-size: 0.875rem; margin-top: var(--md-spacing-xs);">Continue Writing</div>
+                                </div>
+                                <div style="background: var(--md-surface-variant); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); text-align: center;">
+                                    <span class="material-icons-round">lightbulb</span>
+                                    <div style="font-size: 0.875rem; margin-top: var(--md-spacing-xs);">Brainstorm</div>
+                                </div>
+                            </div>
+                            <div style="background: var(--md-surface-variant); padding: var(--md-spacing-md); border-radius: var(--md-radius-medium); flex: 1; display: flex; align-items: center; justify-content: center;">
+                                <div style="text-align: center; color: var(--md-on-surface-variant);">
+                                    <span class="material-icons-round" style="font-size: 2rem; margin-bottom: var(--md-spacing-sm);">auto_awesome</span>
+                                    <div>Select an AI feature to enhance your note</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="section" id="how-it-works">
+            <div class="section-header">
+                <h2 class="section-title">How Mindscribe Works</h2>
+                <p class="section-subtitle">Getting started with Mindscribe is simple and intuitive. Here's how you can transform your learning process in just a few steps.</p>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step-item animate-on-scroll hover-glow">
+                    <div class="step-number">1</div>
+                    <h3 class="feature-title">Create Your First Note</h3>
+                    <p class="feature-description">
+                        Start by creating a new note. Give it a title and begin writing your thoughts, ideas, or study materials.
+                    </p>
+                </div>
+                
+                <div class="step-item animate-on-scroll hover-glow">
+                    <div class="step-number">2</div>
+                    <h3 class="feature-title">Enhance with AI</h3>
+                    <p class="feature-description">
+                        Use the AI assistant to summarize content, generate action items, brainstorm ideas, or get explanations for complex topics.
+                    </p>
+                </div>
+                
+                <div class="step-item animate-on-scroll hover-glow">
+                    <div class="step-number">3</div>
+                    <h3 class="feature-title">Organize & Tag</h3>
+                    <p class="feature-description">
+                        Add tags to categorize your notes. Use the search functionality to quickly find what you're looking for.
+                    </p>
+                </div>
+                
+                <div class="step-item animate-on-scroll hover-glow">
+                    <div class="step-number">4</div>
+                    <h3 class="feature-title">Review & Export</h3>
+                    <p class="feature-description">
+                        Review your notes in a clean, distraction-free interface. Export them to share with others or for offline access.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="section" id="testimonials">
+            <div class="section-header">
+                <h2 class="section-title">What Users Are Saying</h2>
+                <p class="section-subtitle">Discover how Mindscribe is helping students, professionals, and lifelong learners achieve their goals.</p>
+            </div>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card animate-on-scroll hover-glow">
+                    <p class="testimonial-text">
+                        Mindscribe has completely transformed how I study for exams. The AI summarization feature saves me hours of work!
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">S</div>
+                        <div class="author-info">
+                            <h4>Sarah Johnson</h4>
+                            <p>Medical Student</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll hover-glow">
+                    <p class="testimonial-text">
+                        As a researcher, I deal with complex information daily. Mindscribe helps me organize my thoughts and generate new insights.
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">M</div>
+                        <div class="author-info">
+                            <h4>Michael Chen</h4>
+                            <p>Research Scientist</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card animate-on-scroll hover-glow">
+                    <p class="testimonial-text">
+                        The clean interface and powerful features make Mindscribe my go-to note-taking app. I've tried them all, and this is the best.
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">E</div>
+                        <div class="author-info">
+                            <h4>Emily Rodriguez</h4>
+                            <p>Product Manager</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="section">
+            <div class="cta-section animate-on-scroll">
+                <h2 class="cta-title">Ready to Transform Your Learning?</h2>
+                <p class="cta-subtitle">Join thousands of users who are already using Mindscribe to enhance their note-taking and learning experience.</p>
+                <div class="hero-cta">
+                    <a href="https://aditya-cmd-max.github.io/mindscribe/app" class="btn" style="background: white; color: var(--md-primary);">
+                        <i class="fas fa-rocket" style="margin-right: 8px;"></i>
+                        Get Started Now
+                    </a>
+                    <a href="#features" class="btn" style="background: transparent; color: white; border: 1px solid white;">
+                        <i class="fas fa-star" style="margin-right: 8px;"></i>
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" id="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <div class="footer-logo">
-                    <div class="logo">
-                        <img src="https://aditya-cmd-max.github.io/mindscribe/logo.png" alt="Mindscribe Logo">
-                    </div>
-                    <h2 class="app-name">Mindscribe</h2>
+                <h2 class="footer-logo">Mindscribe</h2>
+                <p class="footer-tagline">An AI-powered notebook that helps you learn faster, remember more, and organize your thoughts effectively.</p>
+            </div>
+            
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3>Product</h3>
+                    <a href="#features">Features</a>
+                    <a href="#app-showcase">App Preview</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#">Updates</a>
                 </div>
-                <p class="footer-description">An AI-powered notebook that helps you learn faster, remember more, and organize your thoughts effectively.</p>
+                
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <a href="#">Documentation</a>
+                    <a href="#">Tutorials</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Support</a>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <a href="https://aditya-cmd-max.github.io/reverbit/about">About Us</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Contact</a>
+                    <a href="#">Privacy Policy</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    Made with <i class="fas fa-heart" style="color: #ff4444;"></i> and <i class="fas fa-code"></i> by Aditya Jha.
+                </div>
+                
                 <div class="social-links">
-                    <a href="#" class="social-link">
-                        <span class="material-icons-round">twitter</span>
+                    <a href="https://twitter.com" class="social-link">
+                        <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="#" class="social-link">
-                        <span class="material-icons-round">facebook</span>
+                    <a href="https://facebook.com" class="social-link">
+                        <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="#" class="social-link">
-                        <span class="material-icons-round">linkedin</span>
+                    <a href="https://linkedin.com" class="social-link">
+                        <i class="fab fa-linkedin-in"></i>
                     </a>
-                    <a href="#" class="social-link">
-                        <span class="material-icons-round">github</span>
+                    <a href="https://github.com/aditya-cmd-max/" class="social-link">
+                        <i class="fab fa-github"></i>
                     </a>
                 </div>
             </div>
             
-            <div class="footer-links-column">
-                <h3 class="footer-heading">Product</h3>
-                <ul class="footer-links">
-                    <li><a href="#features" class="footer-link">Features</a></li>
-                    <li><a href="#app-showcase" class="footer-link">App Preview</a></li>
-                    <li><a href="#how-it-works" class="footer-link">How It Works</a></li>
-                    <li><a href="#" class="footer-link">Updates</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-links-column">
-                <h3 class="footer-heading">Resources</h3>
-                <ul class="footer-links">
-                    <li><a href="#" class="footer-link">Documentation</a></li>
-                    <li><a href="#" class="footer-link">Tutorials</a></li>
-                    <li><a href="#" class="footer-link">Blog</a></li>
-                    <li><a href="#" class="footer-link">Support</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-links-column">
-                <h3 class="footer-heading">Company</h3>
-                <ul class="footer-links">
-                    <li><a href="https://aditya-cmd-max.github.io/exonova-/about" class="footer-link">About Us</a></li>
-                    <li><a href="https://aditya-cmd-max.github.io/exonova-/circuit" class="footer-link">Blog</a></li>
-                    <li><a href="#" class="footer-link">Contact</a></li>
-                    <li><a href="#" class="footer-link">Privacy Policy</a></li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <p class="copyright">© 2025 Mindscribe. All rights reserved.</p>
-            <div class="footer-legal">
-                <a href="#" class="footer-legal-link">Privacy Policy</a>
-                <a href="#" class="footer-legal-link">Terms of Service</a>
-                <a href="#" class="footer-legal-link">Cookie Policy</a>
+            <div class="footer-copyright" style="text-align: center; margin-top: var(--md-spacing-lg);">
+                © 2025 Mindscribe. All rights reserved. Powered by Reverbit Innovations.
             </div>
         </div>
     </footer>
 
-    <!-- Scroll to Top Button -->
-    <button class="scroll-to-top" id="scroll-to-top">
-        <span class="material-icons-round">keyboard_arrow_up</span>
-    </button>
-
     <script>
-        // Theme Toggle
+        // DOM Elements
         const themeToggle = document.getElementById('theme-toggle');
-        const themeIcon = themeToggle.querySelector('.material-icons-round');
-        
-        themeToggle.addEventListener('click', () => {
+        const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+        const themeIcons = document.querySelectorAll('.theme-toggle .material-icons-round, .mobile-theme-btn .material-icons-round');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileNavClose = document.getElementById('mobileNavClose');
+        const mobileNav = document.getElementById('mobileNav');
+        const loadingScreen = document.getElementById('loading');
+        const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
+        const animateElements = document.querySelectorAll('.animate-on-scroll');
+        const floatingNavbar = document.querySelector('.floating-navbar');
+        const scrollProgress = document.getElementById('scrollProgress');
+
+        // Initialize the avatar system
+        function initAvatarSystem() {
+            // Wait for auth.js to load
+            if (typeof window.ReverbitAuth !== 'undefined') {
+                // Listen for auth state changes
+                window.ReverbitAuth.auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        // User is signed in
+                        document.body.classList.add('user-signed-in');
+                        
+                        // Add desktop avatar
+                        addDesktopAvatar(user);
+                        
+                        // Add mobile avatar
+                        addMobileAvatar(user);
+                    } else {
+                        // User is signed out
+                        document.body.classList.remove('user-signed-in');
+                        
+                        // Remove avatars
+                        removeDesktopAvatar();
+                        removeMobileAvatar();
+                    }
+                });
+                
+                // Initialize immediately if user is already signed in
+                if (window.ReverbitAuth.getUser()) {
+                    const user = window.ReverbitAuth.getUser();
+                    document.body.classList.add('user-signed-in');
+                    addDesktopAvatar(user);
+                    addMobileAvatar(user);
+                }
+            } else {
+                // If auth.js hasn't loaded yet, check again after a delay
+                setTimeout(initAvatarSystem, 100);
+            }
+        }
+
+        // Add desktop avatar
+        function addDesktopAvatar(user) {
+            const desktopNav = document.querySelector('.desktop-nav');
+            if (!desktopNav) return;
+            
+            removeDesktopAvatar();
+            
+            const avatarContainer = document.createElement('div');
+            avatarContainer.id = 'desktopAvatar';
+            
+            const avatarBtn = document.createElement('button');
+            avatarBtn.className = 'profile-avatar-button reverbit-profile-avatar';
+            avatarBtn.setAttribute('aria-label', 'User profile menu');
+            
+            if (user.photoURL) {
+                const avatarImg = document.createElement('img');
+                avatarImg.className = 'profile-avatar-img reverbit-avatar-img';
+                avatarImg.src = user.photoURL;
+                avatarImg.alt = user.displayName || 'User';
+                avatarImg.onerror = function() {
+                    const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+                    const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                    avatarBtn.textContent = initials;
+                    avatarBtn.style.background = 'linear-gradient(135deg, var(--md-primary), var(--md-secondary))';
+                    avatarBtn.style.color = 'var(--md-on-primary)';
+                };
+                avatarBtn.appendChild(avatarImg);
+            } else {
+                const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+                const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                avatarBtn.textContent = initials;
+                avatarBtn.style.background = 'linear-gradient(135deg, var(--md-primary), var(--md-secondary))';
+                avatarBtn.style.color = 'var(--md-on-primary)';
+            }
+            
+            // Use auth.js popup
+            avatarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (window.ReverbitAuth && window.ReverbitAuth.toggleProfilePopup) {
+                    window.ReverbitAuth.toggleProfilePopup();
+                }
+            });
+            
+            avatarContainer.appendChild(avatarBtn);
+            
+            // Insert into navbar before the sign in button
+            const signInButton = document.getElementById('signInButton');
+            if (signInButton) {
+                desktopNav.insertBefore(avatarContainer, signInButton);
+            } else {
+                // If sign in button not found, insert before theme toggle
+                const themeToggle = document.getElementById('theme-toggle');
+                if (themeToggle) {
+                    desktopNav.insertBefore(avatarContainer, themeToggle);
+                }
+            }
+        }
+
+        // Remove desktop avatar
+        function removeDesktopAvatar() {
+            const existingAvatar = document.getElementById('desktopAvatar');
+            if (existingAvatar && existingAvatar.parentNode) {
+                existingAvatar.parentNode.removeChild(existingAvatar);
+            }
+        }
+
+        // Add mobile avatar
+        function addMobileAvatar(user) {
+            const mobileNav = document.getElementById('mobileNav');
+            if (!mobileNav) return;
+            
+            // Remove existing mobile avatar
+            removeMobileAvatar();
+            
+            // Create mobile avatar container
+            const mobileAvatarContainer = document.createElement('div');
+            mobileAvatarContainer.className = 'mobile-avatar-container';
+            mobileAvatarContainer.id = 'mobileAvatar';
+            
+            // Create user info
+            const userInfo = document.createElement('div');
+            userInfo.className = 'mobile-user-info';
+            
+            // Avatar
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'mobile-user-avatar';
+            
+            if (user.photoURL) {
+                const avatarImg = document.createElement('img');
+                avatarImg.src = user.photoURL;
+                avatarImg.alt = user.displayName || 'User';
+                avatarImg.onerror = function() {
+                    const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+                    const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                    this.style.display = 'none';
+                    this.parentElement.textContent = initials;
+                };
+                avatarDiv.appendChild(avatarImg);
+            } else {
+                const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+                const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                avatarDiv.textContent = initials;
+            }
+            
+            // User details
+            const userDetails = document.createElement('div');
+            userDetails.className = 'mobile-user-details';
+            
+            const userName = document.createElement('div');
+            userName.className = 'mobile-user-name';
+            userName.textContent = user.displayName || user.email?.split('@')[0] || 'User';
+            
+            const userEmail = document.createElement('div');
+            userEmail.className = 'mobile-user-email';
+            userEmail.textContent = user.email || '';
+            
+            userDetails.appendChild(userName);
+            userDetails.appendChild(userEmail);
+            
+            userInfo.appendChild(avatarDiv);
+            userInfo.appendChild(userDetails);
+            
+            // Add mobile menu items
+            const menuItems = document.createElement('div');
+            menuItems.className = 'mobile-nav-links';
+            menuItems.innerHTML = `
+                <a href="https://aditya-cmd-max.github.io/dashboard" class="mobile-nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+                <button class="mobile-logout-btn" id="mobileLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sign Out
+                </button>
+            `;
+            
+            mobileAvatarContainer.appendChild(userInfo);
+            mobileAvatarContainer.appendChild(menuItems);
+            
+            // Find mobile sign in link
+            const mobileSignInLink = document.getElementById('mobileSignInLink');
+            
+            // Insert avatar container
+            if (mobileSignInLink) {
+                mobileNav.insertBefore(mobileAvatarContainer, mobileSignInLink);
+            } else {
+                const tryMindscribeLink = mobileNav.querySelector('a[href*="mindscribe/app"]');
+                if (tryMindscribeLink) {
+                    mobileNav.insertBefore(mobileAvatarContainer, tryMindscribeLink);
+                } else {
+                    const themeToggle = mobileNav.querySelector('.mobile-theme-toggle');
+                    if (themeToggle) {
+                        mobileNav.insertBefore(mobileAvatarContainer, themeToggle);
+                    } else {
+                        mobileNav.insertBefore(mobileAvatarContainer, mobileNav.querySelector('.btn-filled'));
+                    }
+                }
+            }
+            
+            // Add logout handler
+            const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+            if (mobileLogoutBtn) {
+                mobileLogoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    try {
+                        if (window.ReverbitAuth && window.ReverbitAuth.logout) {
+                            await window.ReverbitAuth.logout();
+                        }
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                    }
+                });
+            }
+        }
+
+        // Remove mobile avatar
+        function removeMobileAvatar() {
+            const existingMobileAvatar = document.getElementById('mobileAvatar');
+            if (existingMobileAvatar && existingMobileAvatar.parentNode) {
+                existingMobileAvatar.parentNode.removeChild(existingMobileAvatar);
+            }
+        }
+
+        // Scroll progress indicator
+        function initScrollProgress() {
+            window.addEventListener('scroll', () => {
+                const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (window.scrollY / windowHeight) * 100;
+                scrollProgress.style.width = scrolled + '%';
+            });
+        }
+
+        // Initialize animations on scroll
+        function initScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            animateElements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
             document.body.classList.toggle('light-theme');
             document.body.classList.toggle('dark-theme');
             
             if (document.body.classList.contains('dark-theme')) {
-                themeIcon.textContent = 'light_mode';
+                themeIcons.forEach(icon => icon.textContent = 'light_mode');
+                localStorage.setItem('theme', 'dark');
             } else {
-                themeIcon.textContent = 'dark_mode';
+                themeIcons.forEach(icon => icon.textContent = 'dark_mode');
+                localStorage.setItem('theme', 'light');
             }
-        });
+        }
 
-        // Scroll to Top Button
-        const scrollToTopBtn = document.getElementById('scroll-to-top');
-        
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                scrollToTopBtn.classList.add('visible');
+        themeToggle.addEventListener('click', toggleTheme);
+        mobileThemeToggle.addEventListener('click', toggleTheme);
+
+        // Load saved theme preference
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.body.classList.remove('light-theme');
+                themeIcons.forEach(icon => icon.textContent = 'light_mode');
             } else {
-                scrollToTopBtn.classList.remove('visible');
+                document.body.classList.add('light-theme');
+                document.body.classList.remove('dark-theme');
+                themeIcons.forEach(icon => icon.textContent = 'dark_mode');
             }
+        }
+
+        // Mobile Navigation
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileNav.classList.add('active');
+            document.body.style.overflow = 'hidden';
         });
-        
-        scrollToTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+
+        mobileNavClose.addEventListener('click', () => {
+            mobileNav.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Close mobile nav when clicking on links
+        mobileNav.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = 'auto';
             });
         });
 
-        // Fade-in Animation on Scroll
-        const fadeElements = document.querySelectorAll('.fade-in');
-        
-        const fadeInOnScroll = () => {
-            fadeElements.forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
-                const elementVisible = 150;
+        // Set active nav link based on scroll position
+        function setActiveNavLink() {
+            const sections = document.querySelectorAll('section[id]');
+            const scrollPos = window.scrollY + 100;
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                const sectionId = section.getAttribute('id');
                 
-                if (elementTop < window.innerHeight - elementVisible) {
-                    element.classList.add('visible');
+                if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+                    current = sectionId;
                 }
-            });
-        };
-        
-        window.addEventListener('scroll', fadeInOnScroll);
-        window.addEventListener('load', fadeInOnScroll);
-        
-        // Smooth Scrolling for Anchor Links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 80,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-
-        // Interactive Feature Cards
-        const featureCards = document.querySelectorAll('.feature-card');
-        
-        featureCards.forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-8px)';
             });
             
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0)';
-            });
-        });
-
-        // Floating Elements Animation
-        const floatingElements = document.querySelectorAll('.floating-element');
-        
-        floatingElements.forEach((element, index) => {
-            element.style.animationDelay = `${index * 1.5}s`;
-        });
-
-        // Morphing Icons on Scroll
-        const morphIcons = document.querySelectorAll('.morph-icon');
-        
-        const morphIconsOnScroll = () => {
-            morphIcons.forEach(icon => {
-                const iconTop = icon.getBoundingClientRect().top;
-                const iconVisible = 100;
-                
-                if (iconTop < window.innerHeight - iconVisible) {
-                    icon.classList.add('morphed');
-                } else {
-                    icon.classList.remove('morphed');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href');
+                if (href === `#${current}` || (current === 'home' && href === '#')) {
+                    link.classList.add('active');
                 }
             });
-        };
-        
-        window.addEventListener('scroll', morphIconsOnScroll);
-        window.addEventListener('load', morphIconsOnScroll);
+        }
 
-        // Interactive App Models
-        const appModels = document.querySelectorAll('.app-model');
-        
-        appModels.forEach(model => {
-            model.addEventListener('click', () => {
-                // Add a subtle pulse animation when clicked
-                model.style.transform = 'translateY(-10px) scale(1.02)';
-                setTimeout(() => {
-                    model.style.transform = 'translateY(-10px)';
-                }, 300);
+        // Smooth scroll for anchor links
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                    
+                    // Close mobile nav if open
+                    if (mobileNav.classList.contains('active')) {
+                        mobileNav.classList.remove('active');
+                        document.body.style.overflow = 'auto';
+                    }
+                });
             });
+        }
+
+        // Add image fallback handling
+        function initImageFallbacks() {
+            document.querySelectorAll('img').forEach(img => {
+                img.addEventListener('error', function() {
+                    this.style.display = 'none';
+                    const parent = this.parentElement;
+                    if (parent.classList.contains('nav-logo')) {
+                        parent.innerHTML = 'M';
+                        parent.style.display = 'flex';
+                        parent.style.alignItems = 'center';
+                        parent.style.justifyContent = 'center';
+                        parent.style.fontFamily = 'var(--md-font-logo)';
+                        parent.style.fontWeight = '700';
+                        parent.style.color = 'var(--md-on-primary)';
+                    }
+                });
+            });
+        }
+
+        // Initialize GSAP animations
+        function initGSAPAnimations() {
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                gsap.registerPlugin(ScrollTrigger);
+                
+                // Animate hero title
+                gsap.from('.hero-title', {
+                    duration: 1.2,
+                    y: 50,
+                    opacity: 0,
+                    ease: 'power3.out'
+                });
+                
+                gsap.from('.hero-subtitle', {
+                    duration: 1,
+                    y: 30,
+                    opacity: 0,
+                    delay: 0.3,
+                    ease: 'power3.out'
+                });
+                
+                gsap.from('.hero-cta', {
+                    duration: 1,
+                    y: 30,
+                    opacity: 0,
+                    delay: 0.6,
+                    ease: 'power3.out'
+                });
+                
+                // Floating navbar scroll effect
+                let lastScrollY = window.scrollY;
+                
+                window.addEventListener('scroll', () => {
+                    const currentScrollY = window.scrollY;
+                    
+                    if (currentScrollY > lastScrollY && currentScrollY > 200) {
+                        gsap.to(floatingNavbar, {
+                            y: -100,
+                            opacity: 0,
+                            duration: 0.3,
+                            ease: 'power2.out'
+                        });
+                    } else {
+                        gsap.to(floatingNavbar, {
+                            y: 0,
+                            opacity: 1,
+                            duration: 0.3,
+                            ease: 'power2.out'
+                        });
+                    }
+                    
+                    lastScrollY = currentScrollY;
+                });
+                
+                // Parallax effect for sections
+                gsap.utils.toArray('.section').forEach(section => {
+                    gsap.from(section, {
+                        scrollTrigger: {
+                            trigger: section,
+                            start: 'top 80%',
+                            end: 'bottom 20%',
+                            scrub: 1
+                        },
+                        y: 50,
+                        opacity: 0.5,
+                        duration: 1
+                    });
+                });
+            }
+        }
+
+        // Typing effect for hero subtitle
+        function initTypingEffect() {
+            const typingText = document.querySelector('.typing-text');
+            if (!typingText) return;
+            
+            const text = typingText.textContent;
+            typingText.textContent = '';
+            let i = 0;
+            
+            function typeWriter() {
+                if (i < text.length) {
+                    typingText.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 30);
+                }
+            }
+            
+            // Start typing after a delay
+            setTimeout(typeWriter, 1000);
+        }
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hide loading screen
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 800);
+            
+            // Initialize components
+            loadThemePreference();
+            initAvatarSystem();
+            initScrollProgress();
+            initScrollAnimations();
+            initGSAPAnimations();
+            initSmoothScroll();
+            initImageFallbacks();
+            initTypingEffect();
+            
+            // Set active nav link on scroll
+            window.addEventListener('scroll', setActiveNavLink);
+            
+            // Initialize on load
+            setActiveNavLink();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024 && mobileNav.classList.contains('active')) {
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+            
+            // Update navbar spacing for mobile
+            if (window.innerWidth <= 768) {
+                floatingNavbar.style.padding = 'var(--md-spacing-xs) var(--md-spacing-md)';
+            } else {
+                floatingNavbar.style.padding = 'var(--md-spacing-sm) var(--md-spacing-lg)';
+            }
+        });
+
+        // Keyboard navigation improvements
+        document.addEventListener('keydown', (e) => {
+            // Close mobile nav on Escape key
+            if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+            
+            // Theme toggle with Shift+T
+            if (e.shiftKey && e.key === 'T') {
+                toggleTheme();
+            }
         });
     </script>
 </body>
